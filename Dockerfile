@@ -26,18 +26,19 @@ WORKDIR /otel
 COPY otel/package.json otel/package-lock.json ./
 RUN --mount=type=cache,id=card-credit-frontend-otel-npm,target=/root/.npm npm ci --omit=dev && npm cache clean --force
 
-FROM node:22-alpine AS runner
+FROM nginx:alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=3000
+ENV PORT=3001
 ENV HOSTNAME=0.0.0.0
 ENV NODE_OPTIONS="--experimental-loader=@opentelemetry/instrumentation/hook.mjs --import @opentelemetry/auto-instrumentations-node/register"
 
-RUN apk add --no-cache nginx \
+RUN apk add --no-cache nodejs \
   && addgroup -S nextjs && adduser -S nextjs -G nextjs \
-  && mkdir -p /run/nginx && chown -R nextjs:nextjs /run/nginx /var/lib/nginx
+  && mkdir -p /run/nginx /var/lib/nginx /var/cache/nginx \
+  && chown -R nextjs:nextjs /run/nginx /var/lib/nginx /var/cache/nginx
 
 COPY --chown=nextjs:nextjs --from=builder /workspace/.next/standalone ./
 COPY --chown=nextjs:nextjs --from=builder /workspace/.next/static ./.next/static
