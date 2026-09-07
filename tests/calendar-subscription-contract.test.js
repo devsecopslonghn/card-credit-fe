@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { calendarSubscriptionCreateSchema, calendarSubscriptionListSchema } from "../src/index.js";
+import { calendarSubscriptionCreateSchema, calendarSubscriptionListSchema } from "../src/contracts/index.js";
 
 const item = { id: "subscription-1", deviceLabel: "Laptop", createdAt: "2026-08-16T00:00:00.000Z", lastAccessedAt: null, revokedAt: null };
 const subscriptionPath = `/api/calendar-subscriptions/feed/${"a".repeat(43)}.ics`;

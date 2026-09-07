@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { catalogProductSchema, catalogProviderListSchema } from "../src/index.js";
+import { catalogProductSchema, catalogProviderListSchema } from "../src/contracts/index.js";
 
 const product = {
   presetId: "test-visa",

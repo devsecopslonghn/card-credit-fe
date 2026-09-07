@@ -6,7 +6,7 @@ import {
   createApiErrorBody,
   createRealMoneyAccountInputSchema,
   isApiErrorBody,
-} from "../src/index.js";
+} from "../src/contracts/index.js";
 
 test("creates and recognizes the stable error envelope", () => {
   const body = createApiErrorBody("INVALID_REQUEST", "Invalid", { name: "Required" });

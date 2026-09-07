@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { cardDuplicateGroupSchema } from "../src/index.js";
+import { cardDuplicateGroupSchema } from "../src/contracts/index.js";
 
 const card = (id) => ({
   id,

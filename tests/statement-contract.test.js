@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { statementListSchema, statementPaymentInputSchema, statementPaymentPreviewSchema } from "../src/index.js";
+import { statementListSchema, statementPaymentInputSchema, statementPaymentPreviewSchema } from "../src/contracts/index.js";
 
 const transaction = {
   id: "tx-1", accountId: "account-1", statementId: "statement-1", reimbursementForTransactionId: null,

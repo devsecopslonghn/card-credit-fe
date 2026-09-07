@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { feePaymentSchema, financialReportSchema, isoDateSchema, statementSchema, createFinancialTransactionInputSchema } from "../src/index.js";
+import { feePaymentSchema, financialReportSchema, isoDateSchema, statementSchema, createFinancialTransactionInputSchema } from "../src/contracts/index.js";
 
 test("all business date contracts reject impossible calendar dates consistently", () => {
   assert.equal(isoDateSchema.parse("2026-02-28"), "2026-02-28");

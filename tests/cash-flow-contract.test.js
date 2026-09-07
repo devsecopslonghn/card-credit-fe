@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { monthlyCashFlowResponseSchema } from "../src/index.js";
+import { monthlyCashFlowResponseSchema } from "../src/contracts/index.js";
 
 const row = {
   cardId: "card-1",

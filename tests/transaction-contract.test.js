@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createFinancialTransactionBatchInputSchema, createFinancialTransactionInputSchema, financialTransactionListQuerySchema, financialTransactionListSchema } from "../src/index.js";
+import { createFinancialTransactionBatchInputSchema, createFinancialTransactionInputSchema, financialTransactionListQuerySchema, financialTransactionListSchema } from "../src/contracts/index.js";
 
 const input = { accountId: "507f1f77bcf86cd799439011", transactionDate: "2026-08-16", amount: 1000, transactionType: "EXPENSE", ownership: "PERSONAL", note: "Lunch" };
 const output = { id: "507f1f77bcf86cd799439012", accountId: input.accountId, statementId: null, reimbursementForTransactionId: null, accountType: "DEBIT", transactionType: "EXPENSE", ownership: "PERSONAL", amount: 1000, serviceFeeRate: null, categoryId: "OTHER", transactionDate: input.transactionDate, note: "Lunch", impact: { personalSpending: 1000, debitCashflow: -1000, creditDebt: 0, outstandingReceivable: 0, reimbursementReceived: 0 } };

@@ -19,15 +19,14 @@ jobs:
           node-version: "22"
       - name: Install dependencies
         run: |
-          npm --prefix shared ci
-          npm --prefix frontend ci --include=optional
+          npm ci --include=optional
       - name: Validate
         run: |
-          npm --prefix shared run validate
-          npm --prefix frontend run typecheck
-          npm --prefix frontend run lint
-          npm --prefix frontend run test:critical
-          npm --prefix frontend run build
+          npm run validate-contracts
+          npm run typecheck
+          npm run lint
+          npm run test:critical
+          npm run build
 
   image:
     needs: quality
@@ -43,7 +42,7 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: .
-          file: frontend/Dockerfile
+          file: Dockerfile
           push: true
           tags: |
             ${{ vars.GHCR_REGISTRY }}/${{ github.repository_owner }}/card-credit-fe:${{ github.sha }}

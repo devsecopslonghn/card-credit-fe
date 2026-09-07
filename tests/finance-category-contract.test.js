@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { financeCategoryInputSchema, financeCategoryListSchema } from "../src/index.js";
+import { financeCategoryInputSchema, financeCategoryListSchema } from "../src/contracts/index.js";
 
 test("finance category uses one strict planning contract", () => {
   assert.deepEqual(financeCategoryInputSchema.parse({ name: " Food ", parentId: "parent-1" }), { name: "Food", parentId: "parent-1" });

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { userListSchema, userSchema } from "../src/index.js";
+import { userListSchema, userSchema } from "../src/contracts/index.js";
 
 const user = { id: "user-1", email: "user@example.test", role: "user", workspaceId: "workspace-a", displayName: "User", active: true, lockedAt: null };
 

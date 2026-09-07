@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { financialReportSchema, reportDateRangeSchema, reportDateSchema, reportQuerySchema, resolveReportDateRange } from "../src/index.js";
+import { financialReportSchema, reportDateRangeSchema, reportDateSchema, reportQuerySchema, resolveReportDateRange } from "../src/contracts/index.js";
 
 const metric = { personalSpending: 0, debitCashflow: 0, creditDebt: 0, outstandingReceivable: 0, reimbursementReceived: 0, transactionCount: 0 };
 

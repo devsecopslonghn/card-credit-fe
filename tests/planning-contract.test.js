@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { budgetStatusListSchema } from "../src/index.js";
+import { budgetStatusListSchema } from "../src/contracts/index.js";
 
 const output = { id: "budget-1", month: "2026-08", categoryId: "food", limitAmount: 2_000_000, usedAmount: 500_000, remainingAmount: 1_500_000, usagePercent: 25, status: "SAFE" };
 

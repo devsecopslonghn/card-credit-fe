@@ -5,3 +5,4 @@
 - Card images must retain a safe placeholder/fallback path; frontend image
   preparation must not make catalog validation silently pass on malformed input.
 - Frontend delivery must publish an immutable commit tag before chart update.
+- The browser talks to the backend through the explicit `/api` boundary; no backend source is imported.

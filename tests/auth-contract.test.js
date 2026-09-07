@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { authSessionListSchema, authSessionSchema } from "../src/index.js";
+import { authSessionListSchema, authSessionSchema } from "../src/contracts/index.js";
 
 const session = { email: "user@example.test", role: "user", workspaceId: "workspace-a" };
 

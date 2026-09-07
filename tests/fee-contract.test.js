@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { feeCenterRecordListSchema, feePaymentListSchema } from "../src/index.js";
+import { feeCenterRecordListSchema, feePaymentListSchema } from "../src/contracts/index.js";
 
 const payment = { id: "fee-1", cardId: "card-1", category: "ANNUAL_CARD_FEE", paymentDate: "2026-07-23", amount: 299000, note: "Phí năm" };
 

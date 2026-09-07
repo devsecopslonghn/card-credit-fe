@@ -1,10 +1,8 @@
 import type { NextConfig } from "next";
-import path from "node:path";
 
 const nextConfig: NextConfig = {
   output: "standalone",
   transpilePackages: ["@card-credit/contracts"],
-  turbopack: { root: path.resolve(process.cwd(), "..") },
   async rewrites() {
     const backend = process.env.BACKEND_INTERNAL_URL || (process.env.NODE_ENV === "production" ? "http://backend:3001" : "http://127.0.0.1:3001");
     return [

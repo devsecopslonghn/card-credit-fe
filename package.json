@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "validate-contracts": "tsc --noEmit --allowJs --checkJs --module NodeNext --moduleResolution NodeNext --target ES2022 src/contracts/index.js && node --test tests/*-contract.test.js",
     "test": "npm run test:critical",
     "test:critical": "node --test tests/authSession.test.mjs tests/registerPolicy.test.mjs tests/proxy.test.mjs tests/cardCatalog.test.mjs tests/cardCatalogApi.test.mjs tests/cardDebt.test.mjs tests/dueStatements.test.mjs tests/transactionStatement.test.mjs tests/statementsContract.test.mjs tests/transactionQuery.test.mjs tests/recurring.test.mjs tests/smokeBoundary.test.mjs",
     "test:all": "npm run test:unit && npm run test:integration",
@@ -21,7 +22,7 @@
     "crawl:cards": "node scripts/crawl-card-presets.mjs"
   },
   "dependencies": {
-    "@card-credit/contracts": "file:../shared",
+    "@card-credit/contracts": "file:./src/contracts",
     "@opentelemetry/api": "1.9.1",
     "@opentelemetry/auto-instrumentations-node": "0.79.0",
     "next": "16.3.0",

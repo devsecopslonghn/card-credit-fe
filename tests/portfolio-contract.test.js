@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { cardPortfolioCardSchema, cardPortfolioListSchema } from "../src/index.js";
+import { cardPortfolioCardSchema, cardPortfolioListSchema } from "../src/contracts/index.js";
 
 const card = {
   id: "507f1f77bcf86cd799439011",

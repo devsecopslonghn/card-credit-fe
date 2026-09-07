@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { masterBankListSchema, masterCardTypeListSchema } from "../src/index.js";
+import { masterBankListSchema, masterCardTypeListSchema } from "../src/contracts/index.js";
 
 test("masterdata read schemas expose only safe normalized fields", () => {
   const bank = { _id: "bank-1", shortname: "TST", name: "Test", fullname: "Test Bank", logo: "" };

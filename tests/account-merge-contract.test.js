@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mergeAccountsInputSchema } from "../src/index.js";
+import { mergeAccountsInputSchema } from "../src/contracts/index.js";
 
 test("merge input requires distinct sources and a target", () => {
   assert.throws(() => mergeAccountsInputSchema.parse({ sourceAccountIds: ["a", "a"] }));

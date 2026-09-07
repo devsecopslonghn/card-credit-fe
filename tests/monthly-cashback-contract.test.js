@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { monthlyCashbackListSchema, monthlyCashbackSchema } from "../src/index.js";
+import { monthlyCashbackListSchema, monthlyCashbackSchema } from "../src/contracts/index.js";
 
 test("monthly cashback contract exposes canonical read fields and normalizes calendar periods", () => {
   assert.deepEqual(monthlyCashbackSchema.parse({
