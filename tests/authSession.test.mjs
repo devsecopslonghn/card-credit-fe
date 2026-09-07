@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { parseAuthSessionListResponse, parseAuthSessionResponse } from "../lib/api/authSessionCore.mjs";
+import { parseAuthSessionListResponse, parseAuthSessionResponse } from "../src/lib/api/authSessionCore.mjs";
 
 const session = { email: "user@example.test", role: "user", workspaceId: "workspace-a" };
 

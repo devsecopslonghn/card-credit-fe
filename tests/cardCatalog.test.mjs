@@ -3,15 +3,15 @@ import { mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import products from "../data/card-presets.json" with { type: "json" };
+import products from "../src/data/card-presets.json" with { type: "json" };
 import {
   CARD_IMAGE_PLACEHOLDER_URL,
   createCatalogService,
   getCatalogImageUrl,
   validateCatalogProducts,
-} from "../lib/cardCatalogCore.mjs";
-import { parseDuplicateGroups } from "../lib/api/cardDuplicatesCore.mjs";
-import { readCatalogJson } from "../lib/catalogValidation.mjs";
+} from "../src/lib/cardCatalogCore.mjs";
+import { parseDuplicateGroups } from "../src/lib/api/cardDuplicatesCore.mjs";
+import { readCatalogJson } from "../src/lib/catalogValidation.mjs";
 
 test("catalog validation detects duplicate presetId", () => {
   const duplicate = [{ ...products[0] }, { ...products[0] }];

@@ -4,7 +4,7 @@ import {
   getCatalogProductDetailResponse,
   getCatalogProductsResponse,
   getCatalogProvidersResponse,
-} from "../lib/api/cardCatalogApi.mjs";
+} from "../src/lib/api/cardCatalogApi.mjs";
 
 test("GET providers response returns active provider groups", () => {
   const response = getCatalogProvidersResponse();

@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 
-const presetPath = new URL("../data/card-presets.json", import.meta.url);
+const presetPath = new URL("../src/data/card-presets.json", import.meta.url);
 const presets = JSON.parse(await fs.readFile(presetPath, "utf8"));
 
 const stripHtml = (html) =>

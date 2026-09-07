@@ -8,7 +8,7 @@ import {
   deriveRateFromIncome,
   resolveStatementDate,
   summarizeTransactions,
-} from "../lib/cards/statementCore.mjs";
+} from "../src/lib/cards/statementCore.mjs";
 
 test("statement boundary uses previous exclusive and current inclusive", () => {
   assert.equal(resolveStatementDate("2026-07-07", 7), "2026-07-07");

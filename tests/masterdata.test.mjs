@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { parseMasterBankList, parseMasterCardTypeList } from "../lib/api/masterdataCore.mjs";
+import { parseMasterBankList, parseMasterCardTypeList } from "../src/lib/api/masterdataCore.mjs";
 
 test("masterdata frontend parsers accept canonical safe DTOs", () => {
   assert.deepEqual(parseMasterBankList([{ _id: "bank-1", shortname: "TST", name: "Test", fullname: "Test Bank", logo: "" }]), [{ _id: "bank-1", shortname: "TST", name: "Test", fullname: "Test Bank", logo: "" }]);

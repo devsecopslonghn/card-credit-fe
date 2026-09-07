@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { errorContext, logError, logInfo } from "../lib/observability/logger.mjs";
+import { errorContext, logError, logInfo } from "../src/lib/observability/logger.mjs";
 
 const captureConsole = async (method, fn) => {
   const original = console[method];

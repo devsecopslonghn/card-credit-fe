@@ -6,13 +6,11 @@ const dockerfile = await readFile(new URL("../Dockerfile", import.meta.url), "ut
 
 test("frontend image uses Nginx Alpine as the public runtime base", () => {
   assert.match(dockerfile, /FROM nginx:alpine AS runner/);
-  assert.match(dockerfile, /apk add --no-cache nodejs/);
+  assert.match(dockerfile, /COPY --from=builder \/workspace\/dist \/usr\/share\/nginx\/html/);
+  assert.doesNotMatch(dockerfile, /NEXT_|next start|apk add --no-cache nodejs|node_modules.*runner/);
 });
 
-test("frontend runtime copies only the telemetry dependency closure", () => {
-  assert.match(dockerfile, /FROM node:22-alpine AS otel-deps/);
-  assert.match(dockerfile, /COPY otel\/package\.json otel\/package-lock\.json \.\//);
-  assert.match(dockerfile, /RUN[\s\S]*npm ci --omit=dev/);
-  assert.match(dockerfile, /COPY --chown=nextjs:nextjs --from=otel-deps \/otel\/node_modules \.\/node_modules/);
-  assert.doesNotMatch(dockerfile, /COPY --chown=nextjs:nextjs --from=builder \/workspace\/frontend\/node_modules \.\/node_modules/);
+test("frontend runtime is static-only", () => {
+  const runner = dockerfile.slice(dockerfile.indexOf("FROM nginx:alpine"));
+  assert.doesNotMatch(runner, /node|next|NODE_OPTIONS|start\.sh|node_modules/);
 });

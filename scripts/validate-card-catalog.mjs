@@ -1,9 +1,9 @@
-import { validateCatalogProducts } from "../lib/cardCatalogCore.mjs";
-import { readCatalogJson } from "../lib/catalogValidation.mjs";
-import { logError, logInfo } from "../lib/observability/logger.mjs";
+import { validateCatalogProducts } from "../src/lib/cardCatalogCore.mjs";
+import { readCatalogJson } from "../src/lib/catalogValidation.mjs";
+import { logError, logInfo } from "../src/lib/observability/logger.mjs";
 
-const presetsPath = new URL("../data/card-presets.json", import.meta.url);
-const manifestPath = new URL("../data/card-image-manifest.json", import.meta.url);
+const presetsPath = new URL("../src/data/card-presets.json", import.meta.url);
+const manifestPath = new URL("../src/data/card-image-manifest.json", import.meta.url);
 
 const products = await readCatalogJson(presetsPath);
 const manifest = await readCatalogJson(manifestPath, {});

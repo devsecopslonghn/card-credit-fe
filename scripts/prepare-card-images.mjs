@@ -1,11 +1,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { CARD_IMAGE_PLACEHOLDER_URL } from "../lib/cardCatalogCore.mjs";
-import { errorContext, logInfo, logWarn } from "../lib/observability/logger.mjs";
+import { CARD_IMAGE_PLACEHOLDER_URL } from "../src/lib/cardCatalogCore.mjs";
+import { errorContext, logInfo, logWarn } from "../src/lib/observability/logger.mjs";
 
-const presetsPath = new URL("../data/card-presets.json", import.meta.url);
+const presetsPath = new URL("../src/data/card-presets.json", import.meta.url);
 const outputDir = new URL("../public/card-images/generated/", import.meta.url);
-const manifestPath = new URL("../data/card-image-manifest.json", import.meta.url);
+const manifestPath = new URL("../src/data/card-image-manifest.json", import.meta.url);
 const checkedAt = new Date().toISOString();
 
 const presets = JSON.parse(await fs.readFile(presetsPath, "utf8"));

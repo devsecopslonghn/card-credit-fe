@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { parseUserListResponse, parseUserResponse } from "../lib/api/userCore.mjs";
+import { parseUserListResponse, parseUserResponse } from "../src/lib/api/userCore.mjs";
 
 const user = { id: "user-1", email: "user@example.test", role: "user", workspaceId: "workspace-a", displayName: "User", active: true, lockedAt: null };
 

@@ -13,7 +13,7 @@ import {
   groupCardsByProvider,
   normalizeOwnerInput,
   validateOwnerInput,
-} from "../lib/cards/uiCore.mjs";
+} from "../src/lib/cards/uiCore.mjs";
 
 test("groups cards by provider with catalog and legacy fallback", () => {
   const groups = groupCardsByProvider([
@@ -172,7 +172,7 @@ test("create card payload only contains presetId and owner", () => {
 });
 
 test("remote card images bypass the server optimizer and retain client fallback", () => {
-  const source = readFileSync(new URL("../components/cards/CardImage.tsx", import.meta.url), "utf8");
+  const source = readFileSync(new URL("../src/components/cards/CardImage.tsx", import.meta.url), "utf8");
 
   assert.match(source, /unoptimized=\{remote\}/);
   assert.match(source, /setFailed\(true\)/);
@@ -180,7 +180,7 @@ test("remote card images bypass the server optimizer and retain client fallback"
 });
 
 test("cards dashboard scopes all card widgets to the selected card id", () => {
-  const source = readFileSync(new URL("../app/cards/page.tsx", import.meta.url), "utf8");
+  const source = readFileSync(new URL("../src/pages/cards/page.tsx", import.meta.url), "utf8");
 
   assert.match(source, /selectedCardId/);
   assert.match(source, /card\._id === selectedCardId/);

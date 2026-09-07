@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 test("finance client uses the canonical financial report endpoint", () => {
-  const client = readFileSync(new URL("../lib/api/financeClient.ts", import.meta.url), "utf8");
+  const client = readFileSync(new URL("../src/lib/api/financeClient.ts", import.meta.url), "utf8");
   assert.match(client, /\/api\/financial-reports\/summary/);
   assert.match(client, /financialReportSchema\.parse/);
   assert.match(client, /reportDateRangeSchema\.parse/);
@@ -13,10 +13,10 @@ test("finance client uses the canonical financial report endpoint", () => {
 
 test("financial reports page renders separated financial KPIs and category breakdown", () => {
   const page = readFileSync(
-    new URL("../app/reports/page.tsx", import.meta.url),
+    new URL("../src/pages/reports/page.tsx", import.meta.url),
     "utf8",
   );
-  const client = readFileSync(new URL("../lib/api/financeClient.ts", import.meta.url), "utf8");
+  const client = readFileSync(new URL("../src/lib/api/financeClient.ts", import.meta.url), "utf8");
   assert.match(page, /Personal spending/);
   assert.match(page, /Debit\/Cash\/E-wallet flow/);
   assert.match(page, /Credit debt/);
@@ -40,10 +40,10 @@ test("financial reports page renders separated financial KPIs and category break
 
 test("cards navigation and JSON export point to canonical report surfaces", () => {
   const page = readFileSync(
-    new URL("../app/cards/page.tsx", import.meta.url),
+    new URL("../src/pages/cards/page.tsx", import.meta.url),
     "utf8",
   );
-  assert.match(page, /href="\/reports"/);
+  assert.match(page, /to="\/reports"/);
   assert.match(page, /\/api\/financial-reports\/summary\?from=/);
   assert.doesNotMatch(page, /ownerReportQuery/);
   assert.doesNotMatch(page, /\/api\/reports\/summary/);

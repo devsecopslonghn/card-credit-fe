@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { parseMonthlyCashFlow } from "../lib/api/cashFlowCore.mjs";
+import { parseMonthlyCashFlow } from "../src/lib/api/cashFlowCore.mjs";
 
 test("cash-flow parser returns canonical rows with UI card aliases", () => {
   const parsed = parseMonthlyCashFlow({

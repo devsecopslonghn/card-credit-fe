@@ -3,9 +3,9 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 test("recurring UI uses the canonical lifecycle client and monthly contract", () => {
-  const client = readFileSync(new URL("../lib/api/recurringExpensesClient.ts", import.meta.url), "utf8");
-  const page = readFileSync(new URL("../app/recurring/page.tsx", import.meta.url), "utf8");
-  const navigation = readFileSync(new URL("../components/layout/NavigationBar.tsx", import.meta.url), "utf8");
+  const client = readFileSync(new URL("../src/lib/api/recurringExpensesClient.ts", import.meta.url), "utf8");
+  const page = readFileSync(new URL("../src/pages/recurring/page.tsx", import.meta.url), "utf8");
+  const navigation = readFileSync(new URL("../src/components/layout/NavigationBar.tsx", import.meta.url), "utf8");
   assert.match(client, /recurringExpenseListSchema/);
   assert.match(client, /saveRecurringExpense/);
   assert.match(client, /deactivateRecurringExpense/);

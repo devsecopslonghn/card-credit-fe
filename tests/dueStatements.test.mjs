@@ -8,7 +8,7 @@ import {
   getRemainingAmountDue,
   normalizePaymentDate,
   parsePaymentAmount,
-} from "../lib/cards/dueStatementsCore.mjs";
+} from "../src/lib/cards/dueStatementsCore.mjs";
 
 const cards = [
   { _id: "card-a", providerName: "VIB", displayName: "Max Card", owner: "Tôi" },
@@ -174,7 +174,7 @@ test("shared statement row builder resolves cards amounts and status once", () =
 });
 
 test("dashboard upcoming component uses semantic tokens and no legacy monthly data", () => {
-  const source = readFileSync(new URL("../components/cards/UpcomingPayments.tsx", import.meta.url), "utf8");
+  const source = readFileSync(new URL("../src/components/cards/UpcomingPayments.tsx", import.meta.url), "utf8");
   assert.equal(source.includes("monthlyData"), false);
   assert.equal(source.includes("amountDueThisMonth"), false);
   assert.match(source, /cc-section/);
@@ -198,7 +198,7 @@ test("dashboard upcoming component uses semantic tokens and no legacy monthly da
 });
 
 test("cards page sends persisted card and statement ids and replaces successful statement state", () => {
-  const source = readFileSync(new URL("../app/cards/page.tsx", import.meta.url), "utf8");
+  const source = readFileSync(new URL("../src/pages/cards/page.tsx", import.meta.url), "utf8");
   assert.match(source, /loadStatements: fetchAllCardStatements/);
   assert.match(source, /loadDashboardResources/);
   assert.match(source, /setStatements\(result\.statements\)/);

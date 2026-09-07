@@ -10,7 +10,7 @@ import {
   monthlyCashbackFormFromRecord,
   sortMonthlyCashbacks,
   upsertMonthlyCashbackRequest,
-} from "../lib/api/monthlyCashbacksCore.mjs";
+} from "../src/lib/api/monthlyCashbacksCore.mjs";
 
 test("form defaults to current month, pending, and enables actual amount only through status", () => {
   assert.equal(currentPeriod(new Date(2026, 6, 23)), "2026-07");
@@ -22,7 +22,7 @@ test("form defaults to current month, pending, and enables actual amount only th
     note: "",
   });
   const component = readFileSync(
-    new URL("../components/cards/MonthlyCashbackSection.tsx", import.meta.url),
+    new URL("../src/components/cards/MonthlyCashbackSection.tsx", import.meta.url),
     "utf8",
   );
   assert.match(component, /disabled=\{form\.status !== "RECEIVED"\}/);
@@ -194,7 +194,7 @@ test("client exposes API errors and UI refreshes after mutations with delete con
     /Không có quyền/,
   );
   const component = readFileSync(
-    new URL("../components/cards/MonthlyCashbackSection.tsx", import.meta.url),
+    new URL("../src/components/cards/MonthlyCashbackSection.tsx", import.meta.url),
     "utf8",
   );
   assert.match(component, /await upsertMonthlyCashback\(cardId, form\)/);

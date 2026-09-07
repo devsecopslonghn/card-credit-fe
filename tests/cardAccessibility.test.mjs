@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { getKeyboardNavigationIndex, getWrappedIndex } from "../lib/cards/accessibility.mjs";
+import { getKeyboardNavigationIndex, getWrappedIndex } from "../src/lib/cards/accessibility.mjs";
 
 test("wrapped index moves through picker options", () => {
   assert.equal(getWrappedIndex(0, 3, 1), 1);

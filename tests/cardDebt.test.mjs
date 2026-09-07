@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
-import { summarizeCardDebt } from "../lib/cards/cardDebtCore.mjs";
-import { summarizeTransactions } from "../lib/cards/statementCore.mjs";
+import { summarizeCardDebt } from "../src/lib/cards/cardDebtCore.mjs";
+import { summarizeTransactions } from "../src/lib/cards/statementCore.mjs";
 
 const statement = (overrides) => ({
   _id: overrides._id,
@@ -67,7 +67,7 @@ test("statement cashback cap resets when summaries are calculated per statement 
 });
 
 test("card detail exposes operational and statement actions", () => {
-  const source = readFileSync(new URL("../app/cards/[id]/page.tsx", import.meta.url), "utf8");
+  const source = readFileSync(new URL("../src/pages/cards/[id]/page.tsx", import.meta.url), "utf8");
   assert.match(source, /updateCardOperational/);
   assert.match(source, /fetchCardStatements/);
   assert.match(source, /sendStatementCalendarEmailRequest/);
