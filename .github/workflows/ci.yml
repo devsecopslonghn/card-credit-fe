@@ -1,0 +1,87 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install dependencies
+        run: |
+          npm --prefix shared ci
+          npm --prefix frontend ci --include=optional
+      - name: Validate
+        run: |
+          npm --prefix shared run validate
+          npm --prefix frontend run typecheck
+          npm --prefix frontend run lint
+          npm --prefix frontend run test:critical
+          npm --prefix frontend run build
+
+  image:
+    needs: quality
+    if: ${{ github.event_name != 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ vars.GHCR_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ vars.GHCR_REGISTRY }}/${{ github.repository_owner }}/card-credit-frontend:${{ github.sha }}
+            ${{ vars.GHCR_REGISTRY }}/${{ github.repository_owner }}/card-credit-frontend:latest
+
+  update-chart:
+    needs: image
+    if: ${{ github.event_name == 'push' && !contains(github.event.head_commit.message, '[skip ci]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: devsecopslonghn/card-credit-helm-chart
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: chart
+      - name: Update frontend image tag
+        working-directory: chart
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          GHCR_REGISTRY: ${{ vars.GHCR_REGISTRY }}
+          IMAGE_OWNER: ${{ github.repository_owner }}
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          path = Path("values.yaml")
+          text = path.read_text()
+          text = text.replace("  frontend:\n    repository:", "  frontend:\n    tag: " + os.environ["IMAGE_TAG"] + "\n    repository:", 1)
+          text = text.replace("    repository: ghcr.io/devsecopslonghn/card-credit-frontend", "    repository: " + os.environ["GHCR_REGISTRY"] + "/" + os.environ["IMAGE_OWNER"] + "/card-credit-frontend", 1)
+          lines = text.splitlines()
+          for i, line in enumerate(lines):
+              if line == "  frontend:" and i + 1 < len(lines) and lines[i + 1].strip().startswith("tag:"):
+                  lines[i + 1] = "    tag: " + os.environ["IMAGE_TAG"]
+          path.write_text("\n".join(lines) + "\n")
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add values.yaml
+          git diff --cached --quiet || git commit -m "chore(images): deploy frontend ${{ github.sha }} [skip ci]"
+          git push origin master

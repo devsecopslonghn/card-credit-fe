@@ -1,0 +1,51 @@
+# syntax=docker/dockerfile:1
+
+FROM node:22-alpine AS deps
+WORKDIR /workspace/frontend
+
+ENV NEXT_TELEMETRY_DISABLED=1
+
+COPY shared/package.json shared/package-lock.json /workspace/shared/
+RUN --mount=type=cache,id=card-credit-shared-npm,target=/root/.npm npm --prefix /workspace/shared ci --omit=dev
+COPY shared /workspace/shared
+COPY frontend/package.json frontend/package-lock.json ./
+# Tailwind/PostCSS uses lightningcss; Alpine requires its musl native optional
+# package to be installed explicitly in the dependency layer.
+RUN --mount=type=cache,id=card-credit-frontend-npm,target=/root/.npm npm ci --include=optional
+
+FROM node:22-alpine AS builder
+WORKDIR /workspace/frontend
+
+ENV NEXT_TELEMETRY_DISABLED=1
+
+COPY --from=deps /workspace/shared /workspace/shared
+COPY --from=deps /workspace/frontend/node_modules ./node_modules
+COPY frontend/ .
+RUN npm run prepare:card-images
+RUN npm run build
+RUN npm prune --omit=dev && npm cache clean --force
+
+FROM node:22-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+ENV NODE_OPTIONS="--experimental-loader=@opentelemetry/instrumentation/hook.mjs --import @opentelemetry/auto-instrumentations-node/register"
+
+RUN addgroup -S nextjs && adduser -S nextjs -G nextjs
+
+COPY --chown=nextjs:nextjs --from=builder /workspace/frontend/.next/standalone ./
+COPY --chown=nextjs:nextjs --from=builder /workspace/frontend/.next/static ./frontend/.next/static
+COPY --chown=nextjs:nextjs --from=builder /workspace/frontend/public ./frontend/public
+# The standalone server does not include packages loaded through NODE_OPTIONS.
+# Keep the auto-instrumentation runtime dependencies available at startup.
+COPY --chown=nextjs:nextjs --from=builder /workspace/frontend/node_modules ./node_modules
+
+USER nextjs
+WORKDIR /app/frontend
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]
