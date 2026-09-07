@@ -46,8 +46,8 @@ jobs:
           file: frontend/Dockerfile
           push: true
           tags: |
-            ${{ vars.GHCR_REGISTRY }}/${{ github.repository_owner }}/card-credit-frontend:${{ github.sha }}
-            ${{ vars.GHCR_REGISTRY }}/${{ github.repository_owner }}/card-credit-frontend:latest
+            ${{ vars.GHCR_REGISTRY }}/${{ github.repository_owner }}/card-credit-fe:${{ github.sha }}
+            ${{ vars.GHCR_REGISTRY }}/${{ github.repository_owner }}/card-credit-fe:latest
 
   update-chart:
     needs: image
@@ -73,7 +73,7 @@ jobs:
           path = Path("values.yaml")
           text = path.read_text()
           text = text.replace("  frontend:\n    repository:", "  frontend:\n    tag: " + os.environ["IMAGE_TAG"] + "\n    repository:", 1)
-          text = text.replace("    repository: ghcr.io/devsecopslonghn/card-credit-frontend", "    repository: " + os.environ["GHCR_REGISTRY"] + "/" + os.environ["IMAGE_OWNER"] + "/card-credit-frontend", 1)
+          text = text.replace("    repository: ghcr.io/devsecopslonghn/card-credit-fe", "    repository: " + os.environ["GHCR_REGISTRY"] + "/" + os.environ["IMAGE_OWNER"] + "/card-credit-fe", 1)
           lines = text.splitlines()
           for i, line in enumerate(lines):
               if line == "  frontend:" and i + 1 < len(lines) and lines[i + 1].strip().startswith("tag:"):

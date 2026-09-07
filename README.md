@@ -16,4 +16,4 @@ npm --prefix frontend run build
 ```
 
 The frontend image is published as
-`ghcr.io/devsecopslonghn/card-credit-frontend:<commit-sha>`.
+`ghcr.io/devsecopslonghn/card-credit-fe:<commit-sha>`.
