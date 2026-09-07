@@ -25,6 +25,11 @@ RUN npm run prepare:card-images
 RUN npm run build
 RUN npm prune --omit=dev && npm cache clean --force
 
+FROM node:22-alpine AS otel-deps
+WORKDIR /otel
+COPY frontend/otel/package.json frontend/otel/package-lock.json ./
+RUN --mount=type=cache,id=card-credit-frontend-otel-npm,target=/root/.npm npm ci --omit=dev && npm cache clean --force
+
 FROM node:22-alpine AS runner
 WORKDIR /app
 
@@ -40,8 +45,8 @@ COPY --chown=nextjs:nextjs --from=builder /workspace/frontend/.next/standalone .
 COPY --chown=nextjs:nextjs --from=builder /workspace/frontend/.next/static ./frontend/.next/static
 COPY --chown=nextjs:nextjs --from=builder /workspace/frontend/public ./frontend/public
 # The standalone server does not include packages loaded through NODE_OPTIONS.
-# Keep the auto-instrumentation runtime dependencies available at startup.
-COPY --chown=nextjs:nextjs --from=builder /workspace/frontend/node_modules ./node_modules
+# Keep only the auto-instrumentation runtime dependency closure available at startup.
+COPY --chown=nextjs:nextjs --from=otel-deps /otel/node_modules ./node_modules
 
 USER nextjs
 WORKDIR /app/frontend
