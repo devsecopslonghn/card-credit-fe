@@ -9,7 +9,6 @@ const card = (id) => ({
   providerName: "Bank",
   displayName: "Card",
   network: "Visa",
-  legacy: false,
   owner: "Tôi",
   imageUrl: null,
   annualFee: null,
@@ -24,11 +23,6 @@ const card = (id) => ({
   reminderDaysBefore: [],
   reminderTimezone: null,
   reminderTime: null,
-  statementDate: null,
-  paymentDueDate: null,
-  amountDueThisMonth: null,
-  isPaidThisMonth: null,
-  monthlyData: [],
 });
 
 test("duplicate group contract contains canonical cards and rejects incomplete groups", () => {
