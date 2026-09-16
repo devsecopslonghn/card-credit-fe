@@ -39,6 +39,7 @@ export default function CardsPage() {
   const [statementsError, setStatementsError] = useState("");
   const [statements, setStatements] = useState<CardStatementView[]>([]);
   const [repaymentAccounts, setRepaymentAccounts] = useState<FinanceAccount[]>([]);
+  const [creditDebtByCardId, setCreditDebtByCardId] = useState<Map<string, number>>(() => new Map());
   const [repaymentAccountId, setRepaymentAccountId] = useState("");
   const [selectedOwner, setSelectedOwner] = useState("");
   const [selectedCardId, setSelectedCardId] = useState("");
@@ -96,7 +97,11 @@ export default function CardsPage() {
       const realMoney = items.filter((item) => item.active && item.group === "REAL_MONEY");
       setRepaymentAccounts(realMoney);
       setRepaymentAccountId((current) => current || realMoney[0]?.id || "");
-    }).catch(() => setRepaymentAccounts([]));
+      setCreditDebtByCardId(new Map(items.filter((item) => item.active && item.type === "CREDIT" && item.creditCardId).map((item) => [item.creditCardId!, item.currentDebt])));
+    }).catch(() => {
+      setRepaymentAccounts([]);
+      setCreditDebtByCardId(new Map());
+    });
   }, []);
 
   useEffect(() => {
@@ -141,13 +146,13 @@ export default function CardsPage() {
     const summaries = filteredCards.map((card) => cardSummaries[card._id]).filter(Boolean);
     const totalDebt = summaries.reduce((total, summary) => total + summary.totalGrossDebt, 0);
     const paidDebt = summaries.reduce((total, summary) => total + summary.totalPaidDebt, 0);
-    const currentDebt = summaries.reduce((total, summary) => total + summary.currentOutstandingBalance, 0);
+    const currentDebt = filteredCards.reduce((total, card) => total + (creditDebtByCardId.get(card._id) ?? cardSummaries[card._id]?.currentOutstandingBalance ?? 0), 0);
     const amountDue = dashboardStatements.reduce((total, statement) => {
       if (statement.paymentStatus === "PAID" || statement.effectivePaymentStatus === "PAID") return total;
       return total + Number(statement.summary?.outstandingAmount ?? 0);
     }, 0);
     return { totalDebt, paidDebt, currentDebt, amountDue };
-  }, [cardSummaries, dashboardStatements, filteredCards]);
+  }, [creditDebtByCardId, cardSummaries, dashboardStatements, filteredCards]);
   const reportExportUrl = useMemo(() => {
     const from = `${calendarPeriod.year}-${String(calendarPeriod.month + 1).padStart(2, "0")}-01`;
     const to = new Date().toISOString().slice(0, 10);
@@ -299,10 +304,10 @@ export default function CardsPage() {
           <article className="cc-section rounded-xl p-5">
             <p className="text-sm font-medium cc-text-muted">Tổng nợ phát sinh</p>
             <p className="mt-2 text-3xl font-bold tracking-tight cc-text-primary">{formatVnd(dashboardTotals.totalDebt)}</p>
-            <p className="mt-2 text-xs font-medium cc-text-subtle">Đã thanh toán {formatVnd(dashboardTotals.paidDebt)} · Còn phải trả {formatVnd(dashboardTotals.currentDebt)}</p>
+            <p className="mt-2 text-xs font-medium cc-text-subtle">Đã thanh toán {formatVnd(dashboardTotals.paidDebt)} · Dư nợ hiện tại {formatVnd(dashboardTotals.currentDebt)}</p>
           </article>
           <article className={`rounded-xl border p-5 shadow-sm ${dashboardTotals.amountDue > 0 ? "border-amber-200 bg-amber-50" : "border-emerald-200 bg-emerald-50"}`}>
-            <p className={`text-sm font-bold uppercase tracking-wide ${dashboardTotals.amountDue > 0 ? "text-amber-800" : "text-emerald-800"}`}>Cần thanh toán</p>
+            <p className={`text-sm font-bold uppercase tracking-wide ${dashboardTotals.amountDue > 0 ? "text-amber-800" : "text-emerald-800"}`}>Cần thanh toán theo sao kê</p>
             <p className={`mt-2 text-3xl font-bold tracking-tight ${dashboardTotals.amountDue > 0 ? "text-amber-950" : "text-emerald-950"}`}>{formatVnd(dashboardTotals.amountDue)}</p>
             <p className={`mt-2 text-xs font-medium ${dashboardTotals.amountDue > 0 ? "text-amber-800" : "text-emerald-800"}`}>
               {dashboardTotals.amountDue > 0 ? "Kiểm tra các kỳ sao kê bên dưới." : "Tất cả đã ổn thỏa ở thời điểm hiện tại."}
