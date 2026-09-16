@@ -6,7 +6,7 @@ export const parseMonthlyCashFlow = (value) => {
     ...parsed,
     data: parsed.data.map((row) => ({
       ...row,
-      card: row.card ? { ...row.card, bank: row.card.providerName ?? undefined, name: row.card.displayName ?? undefined } : null,
+      card: row.card,
     })),
   };
 };

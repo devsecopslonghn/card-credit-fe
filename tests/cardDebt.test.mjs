@@ -5,20 +5,20 @@ import { summarizeCardDebt } from "../src/lib/cards/cardDebtCore.mjs";
 import { summarizeTransactions } from "../src/lib/cards/statementCore.mjs";
 
 const statement = (overrides) => ({
-  _id: overrides._id,
+  id: overrides.id,
   statementDate: overrides.statementDate,
   paymentDueDate: overrides.paymentDueDate,
   paymentStatus: overrides.paymentStatus ?? "STATEMENT_CLOSED",
   effectivePaymentStatus: overrides.effectivePaymentStatus ?? overrides.paymentStatus ?? "STATEMENT_CLOSED",
-  summary: { totalAmountDue: overrides.amount },
+  summary: { statementAmount: overrides.amount },
 });
 
 test("card debt summary uses statement summaries for outstanding current and next month debt", () => {
   const summary = summarizeCardDebt(
     [
-      statement({ _id: "jul", statementDate: "2026-07-07", paymentDueDate: "2026-07-22", amount: 1_000_000 }),
-      statement({ _id: "aug", statementDate: "2026-07-07", paymentDueDate: "2026-08-14", amount: 2_000_000 }),
-      statement({ _id: "sep", statementDate: "2026-09-07", paymentDueDate: "2026-09-22", amount: 3_000_000 }),
+      statement({ id: "jul", statementDate: "2026-07-07", paymentDueDate: "2026-07-22", amount: 1_000_000 }),
+      statement({ id: "aug", statementDate: "2026-07-07", paymentDueDate: "2026-08-14", amount: 2_000_000 }),
+      statement({ id: "sep", statementDate: "2026-09-07", paymentDueDate: "2026-09-22", amount: 3_000_000 }),
     ],
     "2026-07-10",
   );
@@ -34,10 +34,10 @@ test("card debt summary uses statement summaries for outstanding current and nex
 test("card debt summary ignores paid zero amount and future statements", () => {
   const summary = summarizeCardDebt(
     [
-      statement({ _id: "paid", statementDate: "2026-07-07", paymentDueDate: "2026-07-22", amount: 1_000_000, paymentStatus: "PAID" }),
-      statement({ _id: "zero", statementDate: "2026-07-07", paymentDueDate: "2026-07-22", amount: 0 }),
-      statement({ _id: "future", statementDate: "2026-08-07", paymentDueDate: "2026-08-22", amount: 2_000_000 }),
-      statement({ _id: "valid", statementDate: "2026-07-07", paymentDueDate: "2026-07-22", amount: 3_000_000 }),
+      statement({ id: "paid", statementDate: "2026-07-07", paymentDueDate: "2026-07-22", amount: 1_000_000, paymentStatus: "PAID" }),
+      statement({ id: "zero", statementDate: "2026-07-07", paymentDueDate: "2026-07-22", amount: 0 }),
+      statement({ id: "future", statementDate: "2026-08-07", paymentDueDate: "2026-08-22", amount: 2_000_000 }),
+      statement({ id: "valid", statementDate: "2026-07-07", paymentDueDate: "2026-07-22", amount: 3_000_000 }),
     ],
     "2026-07-10",
   );

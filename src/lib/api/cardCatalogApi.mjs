@@ -16,29 +16,19 @@ class CatalogApiError extends Error {
 
 const apiError = (status, code, message, fields) => new CatalogApiError(status, code, message, fields);
 
-const stripLegacyAliases = (product) => {
-  const catalogProduct = { ...product };
-  delete catalogProduct.id;
-  delete catalogProduct.bank;
-  delete catalogProduct.bankName;
-  delete catalogProduct.name;
-  delete catalogProduct.type;
-  return catalogProduct;
-};
-
 const normalizeProviderCode = (providerCode) => providerCode.trim().toUpperCase();
 
 export const getCatalogProvidersResponse = () => ({
   data: catalogService.getCatalogProviders().map((provider) => ({
     providerCode: provider.providerCode,
     providerName: provider.providerName,
-    products: provider.products.map(stripLegacyAliases),
+    products: provider.products,
   })),
 });
 
 export const getCatalogProductsResponse = (providerCode) => {
   if (providerCode === undefined || providerCode === null || providerCode === "") {
-    return { data: catalogService.getActiveCatalogProducts().map(stripLegacyAliases) };
+    return { data: catalogService.getActiveCatalogProducts() };
   }
 
   const normalizedProviderCode = normalizeProviderCode(providerCode);
@@ -50,7 +40,7 @@ export const getCatalogProductsResponse = (providerCode) => {
     });
   }
 
-  return { data: products.map(stripLegacyAliases) };
+  return { data: products };
 };
 
 export const getCatalogProductDetailResponse = (presetId) => {
@@ -60,5 +50,5 @@ export const getCatalogProductDetailResponse = (presetId) => {
     throw apiError(404, "PRESET_NOT_FOUND", "Không tìm thấy Card Product.");
   }
 
-  return { data: stripLegacyAliases(product) };
+  return { data: product };
 };

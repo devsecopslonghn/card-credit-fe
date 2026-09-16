@@ -7,7 +7,6 @@ import {
   getDisplayName,
   getNetwork,
   getProviderName,
-  isLegacyCard,
   type CardSummaryView,
   type CreditCardView,
 } from "@/components/cards/cardTypes";
@@ -24,7 +23,6 @@ export function CardItem({ card, summary, statementsAvailable, busy, onDelete }:
   const displayName = getDisplayName(card);
   const providerName = getProviderName(card);
   const network = getNetwork(card);
-  const legacy = isLegacyCard(card);
 
   return (
     <article className="cc-section flex min-w-0 h-full flex-col overflow-hidden rounded-xl transition-shadow hover:shadow-md">
@@ -39,11 +37,6 @@ export function CardItem({ card, summary, statementsAvailable, busy, onDelete }:
           <div className="cc-badge absolute right-3 top-3 rounded-full px-2.5 py-1 text-xs font-bold shadow-sm">
             {network}
           </div>
-          {legacy && (
-            <div className="absolute left-3 top-3 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-800">
-              Legacy
-            </div>
-          )}
         </div>
       </Link>
 

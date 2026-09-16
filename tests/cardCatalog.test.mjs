@@ -87,15 +87,14 @@ test("catalog JSON loading keeps the optional manifest fallback", async () => {
   assert.deepEqual(await readCatalogJson(missingPath, {}), {});
 });
 
-test("duplicate client parses canonical groups and maps card ids to the UI compatibility shape", () => {
+test("duplicate client parses canonical groups and maps card ids to the UI shape", () => {
   const card = (id) => ({
-    _id: id,
+    id,
     presetId: "preset-a",
     providerCode: "BANK",
     providerName: "Bank",
     displayName: "Card",
     network: "Visa",
-    legacy: false,
     owner: "Tôi",
     imageUrl: null,
     annualFee: null,
@@ -110,11 +109,6 @@ test("duplicate client parses canonical groups and maps card ids to the UI compa
     reminderDaysBefore: [],
     reminderTimezone: null,
     reminderTime: null,
-    statementDate: null,
-    paymentDueDate: null,
-    amountDueThisMonth: null,
-    isPaidThisMonth: null,
-    monthlyData: [],
   });
   const groups = parseDuplicateGroups([{
     fingerprint: "workspace::preset-a::Tôi",

@@ -15,7 +15,7 @@ import {
   validateOwnerInput,
 } from "../src/lib/cards/uiCore.mjs";
 
-test("groups cards by provider with catalog and legacy fallback", () => {
+test("groups canonical cards by provider", () => {
   const groups = groupCardsByProvider([
     {
       _id: "2",
@@ -26,9 +26,10 @@ test("groups cards by provider with catalog and legacy fallback", () => {
     },
     {
       _id: "1",
-      bank: "VCB",
-      name: "Legacy Visa",
-      type: "Visa",
+      providerCode: "VCB",
+      providerName: "Vietcombank",
+      displayName: "Visa",
+      network: "Visa",
     },
     {
       _id: "3",
@@ -42,14 +43,14 @@ test("groups cards by provider with catalog and legacy fallback", () => {
   assert.equal(groups.length, 2);
   assert.equal(groups[0].providerName, "Sacombank");
   assert.equal(groups[0].cards.length, 2);
-  assert.equal(groups[1].providerName, "VCB");
+  assert.equal(groups[1].providerName, "Vietcombank");
 });
 
-test("legacy display fallbacks are stable", () => {
-  const card = { bank: "STB", name: "Legacy Card", type: "Visa" };
+test("canonical display fields are stable", () => {
+  const card = { providerName: "Sacombank", displayName: "Visa", network: "Visa" };
 
-  assert.equal(getProviderName(card), "STB");
-  assert.equal(getDisplayName(card), "Legacy Card");
+  assert.equal(getProviderName(card), "Sacombank");
+  assert.equal(getDisplayName(card), "Visa");
   assert.equal(getNetwork(card), "Visa");
 });
 
@@ -72,19 +73,19 @@ test("card summary uses selected statement month and real payment due date", () 
         statementDate: "2026-12-25",
         paymentStatus: "STATEMENT_CLOSED",
         effectivePaymentStatus: "STATEMENT_CLOSED",
-        summary: { totalAmountDue: 1_200_000 },
+        summary: { statementAmount: 1_200_000 },
       },
       {
         statementDate: "2027-01-25",
         paymentStatus: "OPEN",
         effectivePaymentStatus: "OPEN",
-        summary: { totalAmountDue: 500_000 },
+        summary: { statementAmount: 500_000 },
       },
       {
         statementDate: "2026-11-25",
         paymentStatus: "PAID",
         effectivePaymentStatus: "PAID",
-        summary: { totalAmountDue: 300_000 },
+        summary: { statementAmount: 300_000 },
       },
     ],
     { year: 2026, month: 12 },
@@ -101,7 +102,7 @@ test("card summary uses selected statement month and real payment due date", () 
 test("card summary clamps statement day to the last day of selected month", () => {
   const summary = buildCardSummary(
     { statementDay: 31, paymentDueDays: 1 },
-    [{ statementDate: "2028-02-29", summary: { totalAmountDue: 900_000 } }],
+    [{ statementDate: "2028-02-29", summary: { statementAmount: 900_000 } }],
     { year: 2028, month: 2 },
   );
 
@@ -110,28 +111,16 @@ test("card summary clamps statement day to the last day of selected month", () =
   assert.equal(summary.statementAmountDue, 900_000);
 });
 
-test("card summary exposes only the remaining statement amount and supports persisted card fallback", () => {
+test("card summary exposes only the remaining persisted statement amount", () => {
   const partial = buildCardSummary(
     { statementDay: 1, paymentDueDays: 15 },
-    [{ statementDate: "2026-08-01", paymentStatus: "OPEN", paidAmount: 250_000, summary: { totalAmountDue: 1_000_000 } }],
+    [{ statementDate: "2026-08-01", paymentStatus: "OPEN", paidAmount: 250_000, summary: { statementAmount: 1_000_000 } }],
     { year: 2026, month: 8 },
   );
-  const fallback = buildCardSummary(
-    { statementDate: "31/07/2026", paymentDueDate: "14/08/2026", amountDueThisMonth: 7_397_840, isPaidThisMonth: false },
-    [],
-    { year: 2026, month: 8 },
-  );
-  const paidFallback = buildCardSummary(
-    { paymentDueDate: "14/08/2026", amountDueThisMonth: 7_397_840, isPaidThisMonth: true },
-    [],
-    { year: 2026, month: 8 },
-  );
+  const empty = buildCardSummary({ statementDay: 1, paymentDueDays: 15 }, [], { year: 2026, month: 8 });
 
   assert.equal(partial.statementAmountDue, 750_000);
-  assert.equal(fallback.statementDate, "31/07/2026");
-  assert.equal(fallback.paymentDueDate, "14/08/2026");
-  assert.equal(fallback.statementAmountDue, 7_397_840);
-  assert.equal(paidFallback.statementAmountDue, 0);
+  assert.equal(empty.statementAmountDue, 0);
 });
 
 test("owner validation trims collapses whitespace and rejects invalid values", () => {
@@ -150,13 +139,13 @@ test("owner filter uses normalized owner values", () => {
 
 test("provider and card sort are stable", () => {
   const groups = groupCardsByProvider([
-    { _id: "2", bank: "B", name: "Zulu", type: "Visa" },
-    { _id: "1", bank: "A", name: "Alpha", type: "Visa" },
-    { _id: "3", bank: "A", name: "Beta", type: "Visa" },
+    { _id: "2", providerCode: "B", providerName: "B", displayName: "Zulu", network: "Visa" },
+    { _id: "1", providerCode: "A", providerName: "A", displayName: "Alpha", network: "Visa" },
+    { _id: "3", providerCode: "A", providerName: "A", displayName: "Beta", network: "Visa" },
   ]);
 
   assert.deepEqual(groups.map((group) => group.providerName), ["A", "B"]);
-  assert.deepEqual(groups[0].cards.map((card) => card.name), ["Alpha", "Beta"]);
+  assert.deepEqual(groups[0].cards.map((card) => card.displayName), ["Alpha", "Beta"]);
 });
 
 test("create card payload only contains presetId and owner", () => {

@@ -6,7 +6,6 @@ import {
   getDisplayName,
   getProviderName,
   type CreditCardView,
-  type CardSummaryView,
 } from "@/components/cards/cardTypes";
 import {
   buildDueStatementGroups,
@@ -18,7 +17,6 @@ import type { CardStatementView } from "@/lib/api/statementsClient";
 type UpcomingPaymentsProps = {
   statements: CardStatementView[];
   cards: CreditCardView[];
-  cardSummaries: Record<string, CardSummaryView>;
   selectedOwner: string;
   pendingActions: ReadonlySet<string>;
   onPaymentAction: (statement: NonNullable<DueStatementRow["statement"]>, action: "CLOSED" | "PAID") => void;
@@ -40,9 +38,9 @@ const statusClass = {
   PAID: "border-emerald-300 bg-emerald-50 text-success",
 } as const;
 
-export function UpcomingPayments({ statements, cards, cardSummaries, selectedOwner, pendingActions, onPaymentAction }: UpcomingPaymentsProps) {
-  const groups = buildDueStatementGroups({ statements, cards, cardSummaries });
-  const overdueRows = buildOverdueStatementRows({ statements, cards, cardSummaries });
+export function UpcomingPayments({ statements, cards, selectedOwner, pendingActions, onPaymentAction }: UpcomingPaymentsProps) {
+  const groups = buildDueStatementGroups({ statements, cards });
+  const overdueRows = buildOverdueStatementRows({ statements, cards });
 
   if (groups.length === 0 && overdueRows.length === 0) {
     return (
@@ -258,8 +256,8 @@ function PaymentActions({ statement, pendingActions, onPaymentAction, desktop = 
   onPaymentAction: UpcomingPaymentsProps["onPaymentAction"];
   desktop?: boolean;
 }) {
-  const closePending = pendingActions.has(paymentActionKey(statement._id, "CLOSED"));
-  const paidPending = pendingActions.has(paymentActionKey(statement._id, "PAID"));
+  const closePending = pendingActions.has(paymentActionKey(statement.id, "CLOSED"));
+  const paidPending = pendingActions.has(paymentActionKey(statement.id, "PAID"));
   const rowPending = closePending || paidPending;
   const closed = statement.paymentStatus === "STATEMENT_CLOSED" || statement.effectivePaymentStatus === "STATEMENT_CLOSED";
   const paid = statement.paymentStatus === "PAID" || statement.effectivePaymentStatus === "PAID";

@@ -81,13 +81,13 @@ const isPaidStatement = (statement) =>
 
 const getStatementAmountDue = (statement) => {
   if (isPaidStatement(statement)) return 0;
-  const total = Number(statement?.summary?.totalAmountDue ?? 0);
+  const total = Number(statement?.summary?.statementAmount ?? 0);
   const paid = Number(statement?.paidAmount ?? 0);
   if (!Number.isFinite(total)) return 0;
   return Math.max(0, total - (Number.isFinite(paid) ? paid : 0));
 };
 
-const getStatementGrossDebt = (statement) => Math.max(0, Number(statement?.summary?.totalAmountDue ?? 0));
+const getStatementGrossDebt = (statement) => Math.max(0, Number(statement?.summary?.statementAmount ?? 0));
 
 const getStatementPaidDebt = (statement) => {
   const gross = getStatementGrossDebt(statement);
@@ -118,46 +118,36 @@ export const buildCardSummary = (card, statements = [], selectedPeriod = {}) => 
   }, 0);
   const totalGrossDebt = statements.reduce((sum, statement) => sum + getStatementGrossDebt(statement), 0);
   const totalPaidDebt = statements.reduce((sum, statement) => sum + getStatementPaidDebt(statement), 0);
-  const configuredOutstandingBalance = Number(card?.currentOutstandingBalance);
-  const configuredStatementAmountDue = Number(card?.statementAmountDue ?? card?.amountDueThisMonth);
-  const useLegacyPaymentPeriod = !selectedStatement && Number.isFinite(configuredStatementAmountDue) && configuredStatementAmountDue > 0 && !card?.isPaidThisMonth;
-
   return {
-    statementDate: useLegacyPaymentPeriod && card?.statementDate ? card.statementDate : statementDate,
-    paymentDueDate: useLegacyPaymentPeriod && card?.paymentDueDate ? card.paymentDueDate : paymentDueDate,
-    currentOutstandingBalance: Number.isFinite(configuredOutstandingBalance)
-      ? configuredOutstandingBalance
-      : derivedOutstandingBalance,
+    statementDate,
+    paymentDueDate,
+    currentOutstandingBalance: derivedOutstandingBalance,
     totalGrossDebt,
     totalPaidDebt,
-    statementAmountDue: selectedStatement
-      ? getStatementAmountDue(selectedStatement)
-      : useLegacyPaymentPeriod ? configuredStatementAmountDue : 0,
+    statementAmountDue: selectedStatement ? getStatementAmountDue(selectedStatement) : 0,
   };
 };
 
 export const getProviderName = (card) => {
-  const providerName = card?.providerName ?? card?.bank;
+  const providerName = card?.providerName;
   return typeof providerName === "string" && providerName.trim() ? providerName.trim() : "Không xác định";
 };
 
 export const getProviderKey = (card) => {
-  const key = card?.providerCode ?? card?.bank;
+  const key = card?.providerCode;
   const normalized = typeof key === "string" ? key.trim().toUpperCase() : "";
   return normalized || "UNKNOWN";
 };
 
 export const getDisplayName = (card) => {
-  const displayName = card?.displayName ?? card?.name;
+  const displayName = card?.displayName;
   return typeof displayName === "string" && displayName.trim() ? displayName.trim() : "Thẻ chưa xác định";
 };
 
 export const getNetwork = (card) => {
-  const network = card?.network ?? card?.type;
+  const network = card?.network;
   return typeof network === "string" && network.trim() ? network.trim() : "Không xác định";
 };
-
-export const isLegacyCard = (card) => card?.legacy ?? !card?.presetId;
 
 export const compareCards = (left, right) =>
   getDisplayName(left).localeCompare(getDisplayName(right), "vi") ||
@@ -204,62 +194,10 @@ export const filterCardsByOwner = (cards, owner) => {
   return cards.filter((card) => normalizeOwnerInput(card?.owner) === normalizedOwner);
 };
 
-export const getUpcomingPayments = (cards) =>
-  cards
-    .filter((card) => card?.paymentDueDate && !card?.isPaidThisMonth)
-    .sort((left, right) => String(left.paymentDueDate).localeCompare(String(right.paymentDueDate)));
-
-export const defaultMonthlyData = () =>
-  Array.from({ length: 12 }, (_, index) => ({
-    month: index + 1,
-    spend: 0,
-    cashback: 0,
-    fee: 0,
-    otherInterest: 0,
-  }));
-
-export const getMonthlyData = (card) => (Array.isArray(card?.monthlyData) ? card.monthlyData : defaultMonthlyData());
-
 export const numberOrZero = (value) => {
   const amount = Number(value ?? 0);
   return Number.isFinite(amount) ? amount : 0;
 };
-
-export const getAnnualFeeForCalculation = (annualFee) =>
-  typeof annualFee === "number" && Number.isFinite(annualFee) ? annualFee : 0;
-
-export const calculateCardMetrics = (card) => {
-  const monthlyData = getMonthlyData(card);
-  const totalSpend = monthlyData.reduce((sum, month) => sum + numberOrZero(month?.spend), 0);
-  const totalCashback = monthlyData.reduce((sum, month) => sum + numberOrZero(month?.cashback), 0);
-  const totalFee = monthlyData.reduce((sum, month) => sum + numberOrZero(month?.fee), 0);
-  const totalOtherInterest = monthlyData.reduce((sum, month) => sum + numberOrZero(month?.otherInterest), 0);
-  const targetSpendForWaiver = numberOrZero(card?.targetSpendForWaiver);
-  const annualFeeForCalculation = getAnnualFeeForCalculation(card?.annualFee);
-  const annualFeeKnown = typeof card?.annualFee === "number" && Number.isFinite(card.annualFee);
-  const isWaved = targetSpendForWaiver > 0 && totalSpend >= targetSpendForWaiver;
-  const annualFeeApplied = isWaved ? 0 : annualFeeForCalculation;
-  const remainingSpend = targetSpendForWaiver > totalSpend ? targetSpendForWaiver - totalSpend : 0;
-  const netProfit = totalCashback + totalOtherInterest - totalFee - annualFeeApplied;
-
-  return {
-    monthlyData,
-    totalSpend,
-    totalCashback,
-    totalFee,
-    totalOtherInterest,
-    targetSpendForWaiver,
-    annualFeeKnown,
-    annualFeeForCalculation,
-    annualFeeApplied,
-    remainingSpend,
-    isWaved,
-    netProfit,
-  };
-};
-
-export const calculateMonthNet = (month) =>
-  numberOrZero(month?.cashback) + numberOrZero(month?.otherInterest) - numberOrZero(month?.fee);
 
 export const buildOperationalUpdatePayload = (input) => {
   const payload = {};

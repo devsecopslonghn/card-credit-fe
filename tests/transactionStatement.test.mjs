@@ -50,7 +50,6 @@ test("statement summary keeps bank amount due separate from profit", () => {
     { outcomeAmount: 2_000_000, incomeAmount: 1_900_000, cashbackRateBps: 500, eligibleForAnnualFeeWaiver: false },
   ]);
 
-  assert.equal(summary.totalAmountDue, 3_000_000);
   assert.equal(summary.totalIncome, 2_850_000);
   assert.equal(summary.totalServiceFee, 150_000);
   assert.equal(summary.cashbackByRate, 200_000);

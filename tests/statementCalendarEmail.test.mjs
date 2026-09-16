@@ -3,9 +3,9 @@ import test from "node:test";
 import { canEmailStatementCalendar, sendStatementCalendarEmailRequest } from "../src/lib/api/statementCalendarEmailCore.mjs";
 
 test("calendar email action is eligible only for a persisted statement with payment due date", () => {
-  assert.equal(canEmailStatementCalendar({ _id: "s1", statementDate: "2026-07-31", paymentDueDate: "2026-08-15" }), true);
-  assert.equal(canEmailStatementCalendar({ _id: "s1", paymentDueDate: "2026-08-15" }), true);
-  assert.equal(canEmailStatementCalendar({ _id: "s1", statementDate: "2026-07-31" }), false);
+  assert.equal(canEmailStatementCalendar({ id: "s1", statementDate: "2026-07-31", paymentDueDate: "2026-08-15" }), true);
+  assert.equal(canEmailStatementCalendar({ id: "s1", paymentDueDate: "2026-08-15" }), true);
+  assert.equal(canEmailStatementCalendar({ id: "s1", statementDate: "2026-07-31" }), false);
   assert.equal(canEmailStatementCalendar({ statementDate: "2026-07-31", paymentDueDate: "2026-08-15" }), false);
 });
 

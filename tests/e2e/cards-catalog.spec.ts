@@ -22,25 +22,10 @@ type CreditCard = {
   providerName?: string | null;
   displayName?: string | null;
   network?: string | null;
-  legacy?: boolean;
-  bank?: string;
-  name?: string;
-  type?: string;
   owner?: string;
   imageUrl?: string;
   annualFee?: number | null;
   targetSpendForWaiver?: number;
-  statementDate?: string;
-  paymentDueDate?: string;
-  amountDueThisMonth?: number;
-  isPaidThisMonth?: boolean;
-  monthlyData?: Array<{
-    month: number;
-    spend: number;
-    cashback: number;
-    fee: number;
-    otherInterest: number;
-  }>;
 };
 
 const placeholderImage = "/card-images/placeholder-card.svg";
@@ -74,30 +59,18 @@ const inactiveProduct: CatalogProduct = {
 
 const initialCards: CreditCard[] = [
   {
-    _id: "legacy-card-1",
-    legacy: true,
-    bank: "Legacy Bank",
-    name: "Classic Legacy Card",
-    type: "Mastercard",
+    _id: "catalog-card-1",
+    presetId: "catalog-card",
+    providerCode: "CATALOG",
+    providerName: "Catalog Bank",
+    displayName: "Classic Card",
+    network: "Mastercard",
     owner: "Ba",
     imageUrl: placeholderImage,
     annualFee: null,
     targetSpendForWaiver: 0,
-    statementDate: "2026-07-10",
-    paymentDueDate: "2026-07-25",
-    amountDueThisMonth: 100000,
-    isPaidThisMonth: false,
   },
 ];
-
-const defaultMonthlyData = () =>
-  Array.from({ length: 12 }, (_, index) => ({
-    month: index + 1,
-    spend: 0,
-    cashback: 0,
-    fee: 0,
-    otherInterest: 0,
-  }));
 
 const json = (route: Route, body: unknown, status = 200) =>
   route.fulfill({
@@ -186,11 +159,6 @@ async function mockCardApis(
         imageUrl: sacombankProduct.imageUrl,
         annualFee: sacombankProduct.annualFee,
         targetSpendForWaiver: sacombankProduct.targetSpendForWaiver ?? 0,
-        statementDate: "",
-        paymentDueDate: "",
-        amountDueThisMonth: 0,
-        isPaidThisMonth: false,
-        monthlyData: defaultMonthlyData(),
       };
       cards = [...cards, createdCard];
       return json(route, createdCard, 201);
@@ -256,12 +224,12 @@ test.describe("CC-033 card catalog E2E", () => {
       page.getByRole("heading", { name: "Thẻ Tín Dụng" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: /Legacy Bank/ }),
+      page.getByRole("heading", { name: /Catalog Bank/ }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Classic Legacy Card" }),
+      page.getByRole("heading", { name: "Classic Card" }),
     ).toBeVisible();
-    await expect(page.getByText("Legacy", { exact: true })).toBeVisible();
+    await expect(page.getByText("Ba", { exact: true })).toBeVisible();
 
     await page.getByRole("button", { name: "Thêm thẻ mới" }).click();
     await expect(
@@ -403,7 +371,7 @@ test.describe("CC-033 card catalog E2E", () => {
 
     await page.goto("/cards");
     await expect(
-      page.getByRole("heading", { name: "Classic Legacy Card" }),
+      page.getByRole("heading", { name: "Classic Card" }),
     ).toBeVisible();
 
     const hasHorizontalScroll = await page.evaluate(
@@ -442,9 +410,6 @@ test.describe("CC-034 card edge cases E2E", () => {
         owner: "Long Ho",
         imageUrl: "",
         annualFee: 0,
-        statementDate: "",
-        paymentDueDate: "",
-        amountDueThisMonth: undefined,
       },
       {
         _id: "edge-broken-image",
@@ -458,16 +423,15 @@ test.describe("CC-034 card edge cases E2E", () => {
         annualFee: null,
       },
       {
-        _id: "edge-data-uri-legacy",
-        legacy: true,
-        bank: "Legacy Data Bank",
-        name: "Legacy Data URI Product",
-        type: "Mastercard",
+        _id: "edge-data-uri",
+        presetId: "edge-data-uri",
+        providerCode: "EDGE_DATA",
+        providerName: "Data Bank",
+        displayName: "Data URI Product",
+        network: "Mastercard",
         owner: "Long Ho",
         imageUrl: dataUri,
         annualFee: null,
-        paymentDueDate: "",
-        statementDate: "",
       },
     ]);
 
@@ -477,7 +441,7 @@ test.describe("CC-034 card edge cases E2E", () => {
       page.getByRole("heading", { name: "Broken Image Product" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Legacy Data URI Product" }),
+      page.getByRole("heading", { name: "Data URI Product" }),
     ).toBeVisible();
     await expect(page.getByText("0 ₫").first()).toBeVisible();
     const emptyImage = page.getByAltText(`Edge Bank ${longName}`);
@@ -496,7 +460,7 @@ test.describe("CC-034 card edge cases E2E", () => {
       .toBe(true);
 
     await expect(
-      page.getByAltText("Legacy Data Bank Legacy Data URI Product"),
+      page.getByAltText("Data Bank Data URI Product"),
     ).toHaveAttribute("src", dataUri);
     await expect(page.locator("body")).not.toContainText("NaN");
     await expect(page.locator("body")).not.toContainText("undefinedđ");

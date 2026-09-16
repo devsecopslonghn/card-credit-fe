@@ -48,7 +48,7 @@ export function DuplicateResolver({ refreshKey, onMerged, onStatus }: DuplicateR
     try {
       await mergeDuplicateCards({ sourceCardId: sourceCard._id, targetCardId: targetCard._id });
       setGroups((current) => current.filter((item) => item.fingerprint !== group.fingerprint));
-      onStatus("Đã merge thẻ trùng. Monthly data được cộng vào thẻ giữ lại.");
+      onStatus("Đã merge thẻ trùng; lịch sử tài chính của thẻ nguồn được giữ nguyên.");
       onMerged();
     } catch (mergeError) {
       onStatus(mergeError instanceof Error ? mergeError.message : "Không thể merge thẻ trùng.", "error");

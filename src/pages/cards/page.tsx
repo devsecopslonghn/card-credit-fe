@@ -114,9 +114,9 @@ export default function CardsPage() {
   const statementsByCardId = useMemo(() => {
     const groups = new Map<string, CardStatementView[]>();
     for (const statement of statements) {
-      const cardStatements = groups.get(statement.userCardId) ?? [];
+      const cardStatements = groups.get(statement.cardId) ?? [];
       cardStatements.push(statement);
-      groups.set(statement.userCardId, cardStatements);
+      groups.set(statement.cardId, cardStatements);
     }
     return groups;
   }, [statements]);
@@ -134,7 +134,7 @@ export default function CardsPage() {
     [calendarPeriod.month, calendarPeriod.year, cards, statementsByCardId],
   );
   const dashboardStatements = useMemo(
-    () => statements.filter((statement) => filteredCardIds.has(statement.userCardId)),
+    () => statements.filter((statement) => filteredCardIds.has(statement.cardId)),
     [filteredCardIds, statements],
   );
   const dashboardTotals = useMemo(() => {
@@ -178,12 +178,12 @@ export default function CardsPage() {
   };
 
   const handlePaymentAction = async (statement: NonNullable<DueStatementRow["statement"]>, action: "CLOSED" | "PAID") => {
-    const key = paymentActionKey(statement._id, action);
+    const key = paymentActionKey(statement.id, action);
     if (pendingPaymentActionsRef.current.has(key)) return;
     pendingPaymentActionsRef.current.add(key);
     setPendingPaymentActions(new Set(pendingPaymentActionsRef.current));
     try {
-      const preview = await previewStatementPayment(statement.userCardId, statement._id, action, repaymentAccountId || undefined);
+      const preview = await previewStatementPayment(statement.cardId, statement.id, action, repaymentAccountId || undefined);
       if (preview.requiresRepaymentAccount) {
         showToast("Hãy chọn tài khoản DEBIT/CASH/E_WALLET để trả sao kê.", "error");
         return;
@@ -194,8 +194,8 @@ export default function CardsPage() {
       if (!window.confirm(confirmation)) return;
       const commandKey = paymentCommandKeysRef.current.get(key) ?? createStatementPaymentKey();
       paymentCommandKeysRef.current.set(key, commandKey);
-      const updated = await updateStatementPayment(statement.userCardId, statement._id, action, preview.repaymentAccountId ?? undefined, commandKey, preview.version ?? undefined, preview);
-      setStatements((current) => current.map((item) => (item._id === updated._id ? updated : item)));
+      const updated = await updateStatementPayment(statement.cardId, statement.id, action, preview.repaymentAccountId ?? undefined, commandKey, preview.version ?? undefined, preview);
+      setStatements((current) => current.map((item) => (item.id === updated.id ? updated : item)));
       paymentCommandKeysRef.current.delete(key);
       showToast(action === "CLOSED" ? "Đã chốt kỳ sao kê." : "Đã đánh dấu thanh toán.");
     } catch (error) {
@@ -315,7 +315,7 @@ export default function CardsPage() {
             <div><p className="text-xs font-bold uppercase tracking-wider text-[#00687a]">DÒNG TIỀN THỰC TẾ</p><h2 id="cash-flow-title" className="mt-1 text-xl font-bold">Tổng quan tháng {calendarPeriod.month + 1}/{calendarPeriod.year}</h2></div>
             <Link to="/fees" className="text-sm font-bold text-[#00687a] hover:underline">Quản lý phí</Link>
           </div>
-          <div className="grid gap-3 md:grid-cols-3">{monthlyCashFlow.filter((item) => filteredCardIds.has(item.cardId)).map((item) => <article key={item.cardId} className="rounded-xl border p-4" style={{ borderColor: "var(--border)" }}><p className="truncate text-sm font-bold">{item.card?.providerName ?? item.card?.bank ?? "Thẻ"} · {item.card?.displayName ?? item.card?.name ?? item.cardId.slice(-6)}</p><div className="mt-4 grid grid-cols-3 gap-2 text-sm"><div><p className="text-xs cc-text-muted">Tiền Out</p><p className="mt-1 font-bold cc-tabular">{formatVnd(item.totalOut)}</p></div><div><p className="text-xs cc-text-muted">Tiền In</p><p className="mt-1 font-bold text-emerald-600 cc-tabular">{formatVnd(item.totalIn)}</p></div><div><p className="text-xs cc-text-muted">Kết quả</p><p className={`mt-1 font-bold cc-tabular ${item.netResult >= 0 ? "text-emerald-600" : "text-red-600"}`}>{formatVnd(item.netResult)}</p></div></div><p className="mt-3 text-xs cc-text-muted">Phí thực tế: {formatVnd(item.actualFees)} · Không có phí thì 0 ₫</p></article>)}{monthlyCashFlow.filter((item) => filteredCardIds.has(item.cardId)).length === 0 && <p className="text-sm cc-text-muted">Chưa có dữ liệu dòng tiền thực tế cho bộ lọc hiện tại.</p>}</div>
+          <div className="grid gap-3 md:grid-cols-3">{monthlyCashFlow.filter((item) => filteredCardIds.has(item.cardId)).map((item) => <article key={item.cardId} className="rounded-xl border p-4" style={{ borderColor: "var(--border)" }}><p className="truncate text-sm font-bold">{item.card?.providerName ?? "Thẻ"} · {item.card?.displayName ?? item.cardId.slice(-6)}</p><div className="mt-4 grid grid-cols-3 gap-2 text-sm"><div><p className="text-xs cc-text-muted">Tiền Out</p><p className="mt-1 font-bold cc-tabular">{formatVnd(item.totalOut)}</p></div><div><p className="text-xs cc-text-muted">Tiền In</p><p className="mt-1 font-bold text-emerald-600 cc-tabular">{formatVnd(item.totalIn)}</p></div><div><p className="text-xs cc-text-muted">Kết quả</p><p className={`mt-1 font-bold cc-tabular ${item.netResult >= 0 ? "text-emerald-600" : "text-red-600"}`}>{formatVnd(item.netResult)}</p></div></div><p className="mt-3 text-xs cc-text-muted">Phí thực tế: {formatVnd(item.actualFees)} · Không có phí thì 0 ₫</p></article>)}{monthlyCashFlow.filter((item) => filteredCardIds.has(item.cardId)).length === 0 && <p className="text-sm cc-text-muted">Chưa có dữ liệu dòng tiền thực tế cho bộ lọc hiện tại.</p>}</div>
         </section>
 
         {statementsError && (
@@ -327,7 +327,7 @@ export default function CardsPage() {
             </button>
           </div>
         )}
-        <UpcomingPayments statements={dashboardStatements} cards={filteredCards} cardSummaries={cardSummaries} selectedOwner={selectedOwner} pendingActions={pendingPaymentActions} onPaymentAction={handlePaymentAction} />
+        <UpcomingPayments statements={dashboardStatements} cards={filteredCards} selectedOwner={selectedOwner} pendingActions={pendingPaymentActions} onPaymentAction={handlePaymentAction} />
         <DebtLedger statements={dashboardStatements} cards={filteredCards} />
         <DuplicateResolver
           refreshKey={duplicateRefreshKey}

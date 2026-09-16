@@ -12,12 +12,12 @@ type DuplicateGroupsResponse = {
 type DuplicateMergeResponse = {
   data?: {
     targetCard: CreditCardView;
-    deletedSourceId: string;
+    retiredSourceId: string;
     merge: {
       sourceCardId: string;
       targetCardId: string;
-      monthlyDataStrategy: string;
       reason: string;
+      historyPolicy: string;
     };
   };
 };
@@ -41,19 +41,16 @@ const parseApiError = async (response: Response, fallback: string) => {
 
 const normalizeCard = (value: unknown): CreditCardView => {
   const record = value && typeof value === "object" ? value as Record<string, unknown> : {};
-  const dto = cardPortfolioCardSchema.parse({ ...record, id: typeof record._id === "string" ? record._id : record.id });
+  const dto = cardPortfolioCardSchema.parse(record);
   const { id, ...fields } = dto;
-  return { ...record, ...fields, _id: id } as CreditCardView;
+  return { ...fields, _id: id } as CreditCardView;
 };
 
 export const fetchCards = async (): Promise<CreditCardView[]> => {
   const response = await fetch(`/api/cards?timestamp=${Date.now()}`, { cache: "no-store" });
   if (!response.ok) throw new Error(await parseApiError(response, "Không thể tải danh sách thẻ."));
   const raw = await response.json() as unknown;
-  const canonicalInput = Array.isArray(raw)
-    ? raw.map((item) => item && typeof item === "object" ? { ...(item as Record<string, unknown>), id: (item as Record<string, unknown>)._id } : item)
-    : raw;
-  const body = cardPortfolioListSchema.parse(canonicalInput);
+  const body = cardPortfolioListSchema.parse(raw);
   return body.map(normalizeCard);
 };
 
@@ -65,7 +62,7 @@ export const createCard = async (payload: { presetId: string; owner: string }): 
   });
 
   if (!response.ok) throw new Error(await parseApiError(response, "Không thể tạo thẻ."));
-  return (await response.json()) as CreditCardView;
+  return normalizeCard(await response.json());
 };
 
 export const deleteCard = async (cardId: string) => {

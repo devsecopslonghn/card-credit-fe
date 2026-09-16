@@ -5,35 +5,21 @@ import {
   buildCreateCardPayload,
   buildCardSummary,
   buildOperationalUpdatePayload,
-  calculateCardMetrics,
-  calculateMonthNet,
-  defaultMonthlyData,
   filterCardsByOwner,
   formatAnnualFee,
   formatDateDisplay,
   formatRateBps,
   formatVnd,
-  getMonthlyData,
   getDisplayName,
   getNetwork,
   getProviderKey,
   getProviderName,
   getUniqueOwners,
-  getUpcomingPayments,
   groupCardsByProvider,
-  isLegacyCard,
   normalizeOwnerInput,
   numberOrZero,
   validateOwnerInput,
 } from "@/lib/cards/uiCore.mjs";
-
-export type MonthlyData = {
-  month: number;
-  spend?: number;
-  cashback?: number;
-  fee?: number;
-  otherInterest?: number;
-};
 
 export type CreditCardView = {
   _id: string;
@@ -42,10 +28,6 @@ export type CreditCardView = {
   providerName?: string | null;
   displayName?: string | null;
   network?: string | null;
-  legacy?: boolean;
-  bank?: string;
-  name?: string;
-  type?: string;
   owner?: string;
   imageUrl?: string;
   annualFee?: number | null;
@@ -60,11 +42,6 @@ export type CreditCardView = {
   reminderDaysBefore?: number[];
   reminderTimezone?: string;
   reminderTime?: string;
-  statementDate?: string;
-  paymentDueDate?: string;
-  amountDueThisMonth?: number;
-  isPaidThisMonth?: boolean;
-  monthlyData?: MonthlyData[];
 };
 
 export type CardSummaryView = {
@@ -91,23 +68,17 @@ export {
   buildCreateCardPayload,
   buildCardSummary,
   buildOperationalUpdatePayload,
-  calculateCardMetrics,
-  calculateMonthNet,
-  defaultMonthlyData,
   filterCardsByOwner,
   formatAnnualFee,
   formatDateDisplay,
   formatRateBps,
   formatVnd,
   getDisplayName,
-  getMonthlyData,
   getNetwork,
   getProviderKey,
   getProviderName,
   getUniqueOwners,
-  getUpcomingPayments,
   groupCardsByProvider,
-  isLegacyCard,
   normalizeOwnerInput,
   numberOrZero,
   validateOwnerInput,

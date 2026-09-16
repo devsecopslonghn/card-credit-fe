@@ -18,7 +18,7 @@ const statusLabel: Record<CardStatementView["paymentStatus"], string> = {
 export function DebtLedger({ statements, cards }: DebtLedgerProps) {
   const cardsById = new Map(cards.map((card) => [card._id, card]));
   const rows = [...statements]
-    .filter((statement) => cardsById.has(statement.userCardId))
+    .filter((statement) => cardsById.has(statement.cardId))
     .sort((left, right) => right.statementDate.localeCompare(left.statementDate));
 
   return (
@@ -46,12 +46,12 @@ export function DebtLedger({ statements, cards }: DebtLedgerProps) {
             </thead>
             <tbody>
               {rows.map((statement) => {
-                const card = cardsById.get(statement.userCardId)!;
-                const gross = Number(statement.summary.totalAmountDue ?? 0);
+                const card = cardsById.get(statement.cardId)!;
+                const gross = Number(statement.summary.statementAmount ?? 0);
                 const outstanding = Number(statement.summary.outstandingAmount ?? 0);
                 const paid = Math.min(gross, Math.max(0, gross - outstanding));
                 return (
-                  <tr key={statement._id} className="border-b last:border-b-0 cc-border">
+                    <tr key={statement.id} className="border-b last:border-b-0 cc-border">
                     <td className="px-3 py-3">
                       <Link to={`/cards/${card._id}`} className="font-semibold text-blue-700 hover:underline">
                         {getProviderName(card)} · {getDisplayName(card)}

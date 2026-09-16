@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { parseMonthlyCashFlow } from "../src/lib/api/cashFlowCore.mjs";
 
-test("cash-flow parser returns canonical rows with UI card aliases", () => {
+test("cash-flow parser returns canonical rows", () => {
   const parsed = parseMonthlyCashFlow({
     period: "2026-08",
     data: [{
@@ -12,8 +12,10 @@ test("cash-flow parser returns canonical rows with UI card aliases", () => {
       card: { id: "card-1", providerName: "Bank", displayName: "Visa", owner: "Tôi" },
     }],
   });
-  assert.equal(parsed.data[0].card?.bank, "Bank");
-  assert.equal(parsed.data[0].card?.name, "Visa");
+  assert.equal(parsed.data[0].card?.providerName, "Bank");
+  assert.equal(parsed.data[0].card?.displayName, "Visa");
+  assert.equal("bank" in parsed.data[0].card, false);
+  assert.equal("name" in parsed.data[0].card, false);
   assert.equal(parsed.data[0].netResult, -75);
 });
 

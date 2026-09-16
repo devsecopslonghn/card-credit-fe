@@ -62,7 +62,7 @@ export default function PaymentsPage() {
   const cardById = useMemo(() => new Map(cards.map((card) => [card._id, card])), [cards]);
   const enriched = useMemo(() => rows.map((row) => ({
     row,
-    card: cardById.get(row.userCardId),
+    card: cardById.get(row.cardId),
     amount: Math.max(0, Number(row.summary?.outstandingAmount ?? 0)),
     paidAmount: Math.max(0, Number(row.paidAmount ?? 0)),
     effectiveStatus: row.effectivePaymentStatus || row.paymentStatus,
@@ -71,7 +71,7 @@ export default function PaymentsPage() {
   const filtered = useMemo(() => enriched.filter(({ row, card, effectiveStatus }) => {
     const haystack = `${cardLabel(card)} ${row.periodStartDate} ${row.periodEndDate}`.toLowerCase();
     return (!query || haystack.includes(query.toLowerCase())) &&
-      (cardId === "ALL" || row.userCardId === cardId) &&
+      (cardId === "ALL" || row.cardId === cardId) &&
       (status === "ALL" || effectiveStatus === status) &&
       (!fromDate || row.paymentDueDate >= fromDate) &&
       (!toDate || row.paymentDueDate <= toDate);
@@ -85,20 +85,20 @@ export default function PaymentsPage() {
   }, { total: 0, paid: 0, unpaid: 0, overdue: 0 }), [enriched]);
 
   const pay = async (row: CardStatementView) => {
-    setBusy(row._id);
+    setBusy(row.id);
     setError("");
     try {
-      const preview = await previewStatementPayment(row.userCardId, row._id, "PAID", repaymentAccountId || undefined);
+      const preview = await previewStatementPayment(row.cardId, row.id, "PAID", repaymentAccountId || undefined);
       if (preview.requiresRepaymentAccount) {
         setError("Hãy chọn tài khoản DEBIT/CASH/E_WALLET để trả sao kê.");
         return;
       }
       if (!window.confirm(`Xác nhận thanh toán ${formatVnd(preview.amountToPay)} cho kỳ sao kê này?`)) return;
-      const commandKey = paymentCommandKeysRef.current.get(row._id) ?? createStatementPaymentKey();
-      paymentCommandKeysRef.current.set(row._id, commandKey);
-      const next = await updateStatementPayment(row.userCardId, row._id, "PAID", preview.repaymentAccountId ?? undefined, commandKey, preview.version ?? undefined, preview);
-      setRows((current) => current.map((item) => item._id === next._id ? next : item));
-      paymentCommandKeysRef.current.delete(row._id);
+      const commandKey = paymentCommandKeysRef.current.get(row.id) ?? createStatementPaymentKey();
+      paymentCommandKeysRef.current.set(row.id, commandKey);
+      const next = await updateStatementPayment(row.cardId, row.id, "PAID", preview.repaymentAccountId ?? undefined, commandKey, preview.version ?? undefined, preview);
+      setRows((current) => current.map((item) => item.id === next.id ? next : item));
+      paymentCommandKeysRef.current.delete(row.id);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Không thể cập nhật thanh toán.");
     } finally {
@@ -120,8 +120,8 @@ export default function PaymentsPage() {
       <div className="mb-4 flex items-center justify-between gap-3"><p className="text-sm font-semibold cc-text-muted">Hiển thị {filtered.length}/{rows.length} kỳ sao kê</p><button type="button" onClick={resetFilters} className="text-sm font-bold text-[#00687a]">Xóa bộ lọc</button></div>
       {error && <p role="alert" className="mb-4 rounded-lg bg-red-50 p-4 text-red-700">{error}</p>}
       {filtered.length === 0 ? <div className="rounded-lg border border-dashed p-12 text-center cc-text-muted">Không có kỳ sao kê phù hợp với bộ lọc.</div> : <>
-        <div className="hidden overflow-x-auto md:block"><table className="w-full min-w-[800px] text-sm"><thead className="bg-[#eef4ff]"><tr><th className="p-3 text-left">Thẻ</th><th className="p-3 text-left">Kỳ sao kê</th><th className="p-3 text-left">Hạn thanh toán</th><th className="p-3 text-right">Số tiền cần trả</th><th className="p-3 text-left">Trạng thái</th><th className="p-3 text-right">Thao tác</th></tr></thead><tbody>{filtered.map(({ row, card, amount, effectiveStatus }) => <tr key={row._id} className={`border-b ${effectiveStatus === "OVERDUE" ? "bg-red-50/70" : effectiveStatus === "OPEN" ? "bg-amber-50/70" : ""}`}><td className="p-3 font-semibold">{cardLabel(card)}</td><td className="p-3">{formatPeriod(row.periodStartDate)}</td><td className="p-3">{row.paymentDueDate}</td><td className="p-3 text-right font-bold cc-tabular">{formatVnd(amount)}</td><td className="p-3">{statusBadge(effectiveStatus)}</td><td className="p-3 text-right">{effectiveStatus !== "PAID" && <button type="button" disabled={busy === row._id} onClick={() => void pay(row)} className="rounded-lg bg-[#25b8d0] px-3 py-2 text-xs font-bold text-white disabled:opacity-60">{busy === row._id ? "Đang lưu..." : "Đánh dấu đã thanh toán"}</button>}</td></tr>)}</tbody></table></div>
-        <div className="space-y-3 md:hidden">{filtered.map(({ row, card, amount, effectiveStatus }) => <article key={row._id} className={`rounded-xl border p-4 ${effectiveStatus === "OVERDUE" ? "border-red-200 bg-red-50/70" : effectiveStatus === "OPEN" ? "border-amber-200 bg-amber-50/70" : ""}`}><div className="flex items-start justify-between gap-3"><div><p className="font-bold">{cardLabel(card)}</p><p className="mt-1 text-sm cc-text-muted">Hạn thanh toán: {row.paymentDueDate}</p><p className="text-xs cc-text-muted">{formatPeriod(row.periodStartDate)}</p></div>{statusBadge(effectiveStatus)}</div><p className="mt-4 text-2xl font-bold cc-tabular">{formatVnd(amount)}</p>{effectiveStatus !== "PAID" && <button type="button" disabled={busy === row._id} onClick={() => void pay(row)} className="mt-4 w-full rounded-lg bg-[#25b8d0] px-4 py-2.5 font-bold text-white disabled:opacity-60">{busy === row._id ? "Đang lưu..." : "Đánh dấu đã thanh toán"}</button>}</article>)}</div>
+        <div className="hidden overflow-x-auto md:block"><table className="w-full min-w-[800px] text-sm"><thead className="bg-[#eef4ff]"><tr><th className="p-3 text-left">Thẻ</th><th className="p-3 text-left">Kỳ sao kê</th><th className="p-3 text-left">Hạn thanh toán</th><th className="p-3 text-right">Số tiền cần trả</th><th className="p-3 text-left">Trạng thái</th><th className="p-3 text-right">Thao tác</th></tr></thead><tbody>{filtered.map(({ row, card, amount, effectiveStatus }) => <tr key={row.id} className={`border-b ${effectiveStatus === "OVERDUE" ? "bg-red-50/70" : effectiveStatus === "OPEN" ? "bg-amber-50/70" : ""}`}><td className="p-3 font-semibold">{cardLabel(card)}</td><td className="p-3">{formatPeriod(row.periodStartDate)}</td><td className="p-3">{row.paymentDueDate}</td><td className="p-3 text-right font-bold cc-tabular">{formatVnd(amount)}</td><td className="p-3">{statusBadge(effectiveStatus)}</td><td className="p-3 text-right">{effectiveStatus !== "PAID" && <button type="button" disabled={busy === row.id} onClick={() => void pay(row)} className="rounded-lg bg-[#25b8d0] px-3 py-2 text-xs font-bold text-white disabled:opacity-60">{busy === row.id ? "Đang lưu..." : "Đánh dấu đã thanh toán"}</button>}</td></tr>)}</tbody></table></div>
+        <div className="space-y-3 md:hidden">{filtered.map(({ row, card, amount, effectiveStatus }) => <article key={row.id} className={`rounded-xl border p-4 ${effectiveStatus === "OVERDUE" ? "border-red-200 bg-red-50/70" : effectiveStatus === "OPEN" ? "border-amber-200 bg-amber-50/70" : ""}`}><div className="flex items-start justify-between gap-3"><div><p className="font-bold">{cardLabel(card)}</p><p className="mt-1 text-sm cc-text-muted">Hạn thanh toán: {row.paymentDueDate}</p><p className="text-xs cc-text-muted">{formatPeriod(row.periodStartDate)}</p></div>{statusBadge(effectiveStatus)}</div><p className="mt-4 text-2xl font-bold cc-tabular">{formatVnd(amount)}</p>{effectiveStatus !== "PAID" && <button type="button" disabled={busy === row.id} onClick={() => void pay(row)} className="mt-4 w-full rounded-lg bg-[#25b8d0] px-4 py-2.5 font-bold text-white disabled:opacity-60">{busy === row.id ? "Đang lưu..." : "Đánh dấu đã thanh toán"}</button>}</article>)}</div>
       </>}
     </section>
   </div></main>;

@@ -197,6 +197,5 @@ export const summarizeTransactions = (transactions = [], options = {}) => {
     cashbackCap,
     expectedNetProfit,
     actualNetProfit,
-    totalAmountDue: totals.totalOutcome,
   };
 };

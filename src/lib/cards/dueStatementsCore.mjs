@@ -44,11 +44,7 @@ const isPaid = (statement) =>
 
 export const getRemainingAmountDue = (statement) => {
   const canonicalOutstanding = parsePaymentAmount(statement?.summary?.outstandingAmount);
-  if (Number.isFinite(canonicalOutstanding)) return Math.max(0, canonicalOutstanding);
-  const total = parsePaymentAmount(statement?.summary?.totalAmountDue);
-  if (!Number.isFinite(total) || isPaid(statement)) return 0;
-  const paid = parsePaymentAmount(statement?.paidAmount);
-  return Math.max(0, total - (Number.isFinite(paid) ? paid : 0));
+  return Number.isFinite(canonicalOutstanding) && !isPaid(statement) ? Math.max(0, canonicalOutstanding) : 0;
 };
 
 export const getStatementDueStatus = (statement, today = formatDateOnlyFromDate(new Date())) => {
@@ -68,7 +64,7 @@ const statementRow = (statement, card, today) => {
   const remainingAmountDue = getRemainingAmountDue(statement);
   if (!Number.isFinite(remainingAmountDue) || remainingAmountDue <= 0) return null;
   return {
-    key: `statement:${statement._id}`,
+    key: `statement:${statement.id}`,
     statement,
     card,
     statementDate,
@@ -79,30 +75,13 @@ const statementRow = (statement, card, today) => {
   };
 };
 
-const fallbackRow = (card, summary, today) => {
-  const dueDate = normalizePaymentDate(summary?.paymentDueDate ?? card?.paymentDueDate);
-  const statementDate = normalizePaymentDate(summary?.statementDate ?? card?.statementDate);
-  const remainingAmountDue = parsePaymentAmount(summary?.statementAmountDue ?? card?.amountDueThisMonth);
-  if (!dueDate || !Number.isFinite(remainingAmountDue) || remainingAmountDue <= 0 || card?.isPaidThisMonth) return null;
-  return {
-    key: `card:${card._id}:${dueDate}`,
-    statement: null,
-    card,
-    statementDate,
-    dueDate,
-    amountDue: remainingAmountDue,
-    remainingAmountDue,
-    status: getStatementDueStatus({ paymentDueDate: dueDate }, today),
-  };
-};
-
 export const buildStatementRows = ({ statements = [], cards = [], today = formatDateOnlyFromDate(new Date()) }) => {
   const cardsById = new Map(cards.map((card) => [card._id, card]));
   const seenStatementIds = new Set();
   return statements.flatMap((statement) => {
-    if (!statement?._id || seenStatementIds.has(statement._id)) return [];
-    seenStatementIds.add(statement._id);
-    const card = cardsById.get(statement.userCardId);
+    if (!statement?.id || seenStatementIds.has(statement.id)) return [];
+    seenStatementIds.add(statement.id);
+    const card = cardsById.get(statement.cardId);
     if (!card) return [];
     const row = statementRow(statement, card, today);
     return row ? [row] : [];
@@ -112,22 +91,15 @@ export const buildStatementRows = ({ statements = [], cards = [], today = format
 export const buildUpcomingPaymentRows = ({
   statements = [],
   cards = [],
-  cardSummaries = {},
   today = formatDateOnlyFromDate(new Date()),
 }) => {
-  const rows = buildStatementRows({ statements, cards, today });
-  const statementPeriods = new Set(rows.map((row) => `${row.card._id}:${row.dueDate}`));
-  for (const card of cards) {
-    const fallback = fallbackRow(card, cardSummaries[card._id], today);
-    if (fallback && !statementPeriods.has(`${card._id}:${fallback.dueDate}`)) rows.push(fallback);
-  }
-  return rows;
+  return buildStatementRows({ statements, cards, today });
 };
 
 const compareRows = (left, right) =>
   left.dueDate.localeCompare(right.dueDate) ||
-  String(left.card.providerName ?? left.card.bank ?? "").localeCompare(String(right.card.providerName ?? right.card.bank ?? ""), "vi") ||
-  String(left.card.displayName ?? left.card.name ?? "").localeCompare(String(right.card.displayName ?? right.card.name ?? ""), "vi") ||
+  String(left.card.providerName ?? "").localeCompare(String(right.card.providerName ?? ""), "vi") ||
+  String(left.card.displayName ?? "").localeCompare(String(right.card.displayName ?? ""), "vi") ||
   left.key.localeCompare(right.key);
 
 export const buildDueStatementGroups = (input) => {

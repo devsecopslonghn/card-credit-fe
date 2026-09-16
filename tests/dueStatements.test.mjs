@@ -17,13 +17,13 @@ const cards = [
 ];
 
 const statement = (overrides) => ({
-  _id: overrides._id,
-  userCardId: overrides.userCardId,
+  id: overrides.id,
+  cardId: overrides.cardId,
   statementDate: overrides.statementDate,
   paymentDueDate: overrides.paymentDueDate,
   paymentStatus: overrides.paymentStatus ?? "STATEMENT_CLOSED",
   effectivePaymentStatus: overrides.effectivePaymentStatus ?? overrides.paymentStatus ?? "STATEMENT_CLOSED",
-  summary: { totalAmountDue: overrides.amount },
+  summary: { statementAmount: overrides.amount, outstandingAmount: overrides.amount },
 });
 
 test("due statements group by due month and calculate count and amount", () => {
@@ -31,9 +31,9 @@ test("due statements group by due month and calculate count and amount", () => {
     cards,
     today: "2026-07-10",
     statements: [
-      statement({ _id: "jul", userCardId: "card-a", statementDate: "2026-06-30", paymentDueDate: "2026-07-15", amount: 1_000_000 }),
-      statement({ _id: "aug-1", userCardId: "card-b", statementDate: "2026-07-01", paymentDueDate: "2026-08-16", amount: 2_000_000 }),
-      statement({ _id: "aug-2", userCardId: "card-c", statementDate: "2026-07-02", paymentDueDate: "2026-08-16", amount: 3_000_000 }),
+      statement({ id: "jul", cardId: "card-a", statementDate: "2026-06-30", paymentDueDate: "2026-07-15", amount: 1_000_000 }),
+      statement({ id: "aug-1", cardId: "card-b", statementDate: "2026-07-01", paymentDueDate: "2026-08-16", amount: 2_000_000 }),
+      statement({ id: "aug-2", cardId: "card-c", statementDate: "2026-07-02", paymentDueDate: "2026-08-16", amount: 3_000_000 }),
     ],
   });
 
@@ -51,13 +51,13 @@ test("due statements sort by due date then bank then card name inside month", ()
     cards,
     today: "2026-07-10",
     statements: [
-      statement({ _id: "late", userCardId: "card-b", statementDate: "2026-07-01", paymentDueDate: "2026-08-20", amount: 1 }),
-      statement({ _id: "acb", userCardId: "card-c", statementDate: "2026-07-01", paymentDueDate: "2026-08-16", amount: 1 }),
-      statement({ _id: "vib", userCardId: "card-a", statementDate: "2026-07-01", paymentDueDate: "2026-08-16", amount: 1 }),
+      statement({ id: "late", cardId: "card-b", statementDate: "2026-07-01", paymentDueDate: "2026-08-20", amount: 1 }),
+      statement({ id: "acb", cardId: "card-c", statementDate: "2026-07-01", paymentDueDate: "2026-08-16", amount: 1 }),
+      statement({ id: "vib", cardId: "card-a", statementDate: "2026-07-01", paymentDueDate: "2026-08-16", amount: 1 }),
     ],
   });
 
-  assert.deepEqual(groups[0].rows.map((row) => row.statement._id), ["acb", "vib", "late"]);
+  assert.deepEqual(groups[0].rows.map((row) => row.statement.id), ["acb", "vib", "late"]);
 });
 
 test("due statements exclude zero paid and overdue rows without requiring the statement to be closed", () => {
@@ -65,21 +65,21 @@ test("due statements exclude zero paid and overdue rows without requiring the st
     cards,
     today: "2026-07-10",
     statements: [
-      statement({ _id: "zero", userCardId: "card-a", statementDate: "2026-06-30", paymentDueDate: "2026-07-15", amount: 0 }),
-      statement({ _id: "future", userCardId: "card-a", statementDate: "2026-08-30", paymentDueDate: "2026-09-15", amount: 1 }),
-      statement({ _id: "paid", userCardId: "card-a", statementDate: "2026-06-30", paymentDueDate: "2026-07-15", amount: 1, paymentStatus: "PAID" }),
-      statement({ _id: "overdue", userCardId: "card-a", statementDate: "2026-06-01", paymentDueDate: "2026-07-01", amount: 1, effectivePaymentStatus: "OVERDUE" }),
-      statement({ _id: "valid", userCardId: "card-a", statementDate: "2026-06-30", paymentDueDate: "2026-07-15", amount: 1 }),
+      statement({ id: "zero", cardId: "card-a", statementDate: "2026-06-30", paymentDueDate: "2026-07-15", amount: 0 }),
+      statement({ id: "future", cardId: "card-a", statementDate: "2026-08-30", paymentDueDate: "2026-09-15", amount: 1 }),
+      statement({ id: "paid", cardId: "card-a", statementDate: "2026-06-30", paymentDueDate: "2026-07-15", amount: 1, paymentStatus: "PAID" }),
+      statement({ id: "overdue", cardId: "card-a", statementDate: "2026-06-01", paymentDueDate: "2026-07-01", amount: 1, effectivePaymentStatus: "OVERDUE" }),
+      statement({ id: "valid", cardId: "card-a", statementDate: "2026-06-30", paymentDueDate: "2026-07-15", amount: 1 }),
     ],
   });
   const overdue = buildOverdueStatementRows({
     cards,
     today: "2026-07-10",
-    statements: [statement({ _id: "overdue", userCardId: "card-a", statementDate: "2026-06-01", paymentDueDate: "2026-07-01", amount: 1 })],
+    statements: [statement({ id: "overdue", cardId: "card-a", statementDate: "2026-06-01", paymentDueDate: "2026-07-01", amount: 1 })],
   });
 
-  assert.deepEqual(groups.flatMap((group) => group.rows.map((row) => row.statement._id)), ["valid", "future"]);
-  assert.deepEqual(overdue.map((row) => row.statement._id), ["overdue"]);
+  assert.deepEqual(groups.flatMap((group) => group.rows.map((row) => row.statement.id)), ["valid", "future"]);
+  assert.deepEqual(overdue.map((row) => row.statement.id), ["overdue"]);
 });
 
 test("normalizes supported dates safely and rejects invalid calendar dates", () => {
@@ -94,32 +94,25 @@ test("parses VND strings and calculates partial and fully paid remaining amounts
   assert.equal(parsePaymentAmount("27.257.240đ"), 27_257_240);
   assert.equal(parsePaymentAmount("7,397,840"), 7_397_840);
   assert.equal(Number.isNaN(parsePaymentAmount(null)), true);
-  assert.equal(getRemainingAmountDue({ summary: { totalAmountDue: "1.000.000" }, paidAmount: 250_000 }), 750_000);
-  assert.equal(getRemainingAmountDue({ summary: { totalAmountDue: 1_000_000 }, paymentStatus: "PAID" }), 0);
+  assert.equal(getRemainingAmountDue({ id: "partial", summary: { outstandingAmount: "1.000.000" }, paidAmount: 250_000 }), 1_000_000);
+  assert.equal(getRemainingAmountDue({ id: "paid", summary: { outstandingAmount: 1_000_000 }, paymentStatus: "PAID" }), 0);
   for (const amount of [0, null, undefined, Number.NaN]) {
-    assert.equal(getRemainingAmountDue({ summary: { totalAmountDue: amount } }), 0);
+    assert.equal(getRemainingAmountDue({ id: "empty", summary: { outstandingAmount: amount } }), 0);
   }
 });
 
-test("merges statement and card fallback sources without duplicates and prefers the statement", () => {
+test("uses persisted statements as the sole source for upcoming payments", () => {
   const groups = buildDueStatementGroups({
     today: "2026-07-13",
-    cards: [
-      ...cards,
-      { _id: "card-d", providerName: "UOB", displayName: "One", paymentDueDate: "02/08/2026", amountDueThisMonth: "27.257.240" },
-    ],
-    cardSummaries: {
-      "card-a": { statementDate: "2026-07-31", paymentDueDate: "2026-08-14", statementAmountDue: "7.397.840" },
-      "card-d": { statementDate: "2026-07-18", paymentDueDate: "02/08/2026", statementAmountDue: "27.257.240" },
-    },
+    cards,
     statements: [
-      statement({ _id: "vib-open", userCardId: "card-a", statementDate: "2026-07-31", paymentDueDate: "2026-08-14", amount: 7_397_840, paymentStatus: "OPEN" }),
+      statement({ id: "vib-open", cardId: "card-a", statementDate: "2026-07-31", paymentDueDate: "2026-08-14", amount: 7_397_840, paymentStatus: "OPEN" }),
     ],
   });
 
   assert.equal(groups.length, 1);
-  assert.deepEqual(groups[0].rows.map((row) => row.key), ["card:card-d:2026-08-02", "statement:vib-open"]);
-  assert.equal(groups[0].dueAmount, 34_655_080);
+  assert.deepEqual(groups[0].rows.map((row) => row.key), ["statement:vib-open"]);
+  assert.equal(groups[0].dueAmount, 7_397_840);
 });
 
 test("groups multiple banks and months from unordered input with deterministic tie sorting", () => {
@@ -127,31 +120,31 @@ test("groups multiple banks and months from unordered input with deterministic t
     today: "2026-07-01",
     cards,
     statements: [
-      statement({ _id: "sep", userCardId: "card-a", statementDate: "2026-08-01", paymentDueDate: "2026-09-02", amount: 3 }),
-      statement({ _id: "vib", userCardId: "card-a", statementDate: "2026-07-20", paymentDueDate: "2026-08-14", amount: 2 }),
-      statement({ _id: "sacombank", userCardId: "card-b", statementDate: "2026-07-01", paymentDueDate: "2026-08-01", amount: 1 }),
-      statement({ _id: "acb", userCardId: "card-c", statementDate: "2026-07-01", paymentDueDate: "2026-08-14", amount: 4 }),
+      statement({ id: "sep", cardId: "card-a", statementDate: "2026-08-01", paymentDueDate: "2026-09-02", amount: 3 }),
+      statement({ id: "vib", cardId: "card-a", statementDate: "2026-07-20", paymentDueDate: "2026-08-14", amount: 2 }),
+      statement({ id: "sacombank", cardId: "card-b", statementDate: "2026-07-01", paymentDueDate: "2026-08-01", amount: 1 }),
+      statement({ id: "acb", cardId: "card-c", statementDate: "2026-07-01", paymentDueDate: "2026-08-14", amount: 4 }),
     ],
   });
 
   assert.deepEqual(result.map((group) => group.monthKey), ["2026-08", "2026-09"]);
-  assert.deepEqual(result[0].rows.map((row) => row.statement._id), ["sacombank", "acb", "vib"]);
+  assert.deepEqual(result[0].rows.map((row) => row.statement.id), ["sacombank", "acb", "vib"]);
 });
 
-test("keeps multiple periods for one card and rejects invalid fallback values", () => {
+test("keeps multiple persisted periods for one card and ignores orphan cards", () => {
   const result = buildDueStatementGroups({
     today: "2026-07-01",
-    cards: [cards[0], { _id: "invalid", paymentDueDate: "31/02/2026", amountDueThisMonth: "abc" }],
+    cards: [cards[0]],
     statements: [
-      statement({ _id: "aug", userCardId: "card-a", statementDate: "2026-07-01", paymentDueDate: "2026-08-01", amount: 10 }),
-      statement({ _id: "sep", userCardId: "card-a", statementDate: "2026-08-01", paymentDueDate: "2026-09-01", amount: 20 }),
+      statement({ id: "aug", cardId: "card-a", statementDate: "2026-07-01", paymentDueDate: "2026-08-01", amount: 10 }),
+      statement({ id: "sep", cardId: "card-a", statementDate: "2026-08-01", paymentDueDate: "2026-09-01", amount: 20 }),
     ],
   });
-  assert.deepEqual(result.flatMap((group) => group.rows.map((row) => row.statement._id)), ["aug", "sep"]);
+  assert.deepEqual(result.flatMap((group) => group.rows.map((row) => row.statement.id)), ["aug", "sep"]);
 });
 
 test("deduplicates repeated statement records by stable statement id", () => {
-  const repeated = statement({ _id: "same", userCardId: "card-a", statementDate: "2026-07-01", paymentDueDate: "2026-08-01", amount: 10 });
+  const repeated = statement({ id: "same", cardId: "card-a", statementDate: "2026-07-01", paymentDueDate: "2026-08-01", amount: 10 });
   const result = buildDueStatementGroups({ today: "2026-07-01", cards, statements: [repeated, { ...repeated }] });
   assert.equal(result[0].dueCount, 1);
   assert.equal(result[0].dueAmount, 10);
@@ -162,8 +155,8 @@ test("shared statement row builder resolves cards amounts and status once", () =
     cards,
     today: "2026-07-10",
     statements: [
-      statement({ _id: "known", userCardId: "card-a", statementDate: "2026-06-01", paymentDueDate: "2026-07-01", amount: "125000" }),
-      statement({ _id: "orphan", userCardId: "missing", statementDate: "2026-06-01", paymentDueDate: "2026-07-20", amount: 500 }),
+      statement({ id: "known", cardId: "card-a", statementDate: "2026-06-01", paymentDueDate: "2026-07-01", amount: "125000" }),
+      statement({ id: "orphan", cardId: "missing", statementDate: "2026-06-01", paymentDueDate: "2026-07-20", amount: 500 }),
     ],
   });
 
@@ -173,7 +166,7 @@ test("shared statement row builder resolves cards amounts and status once", () =
   assert.equal(rows[0].status, "OVERDUE");
 });
 
-test("dashboard upcoming component uses semantic tokens and no legacy monthly data", () => {
+test("dashboard upcoming component uses semantic tokens and canonical statement data", () => {
   const source = readFileSync(new URL("../src/components/cards/UpcomingPayments.tsx", import.meta.url), "utf8");
   assert.equal(source.includes("monthlyData"), false);
   assert.equal(source.includes("amountDueThisMonth"), false);
@@ -190,8 +183,8 @@ test("dashboard upcoming component uses semantic tokens and no legacy monthly da
   assert.match(source, />Thao tác</);
   assert.match(source, /Chốt sao kê/);
   assert.match(source, /Đánh dấu đã thanh toán/);
-  assert.match(source, /paymentActionKey\(statement\._id, "CLOSED"\)/);
-  assert.match(source, /paymentActionKey\(statement\._id, "PAID"\)/);
+  assert.match(source, /paymentActionKey\(statement\.id, "CLOSED"\)/);
+  assert.match(source, /paymentActionKey\(statement\.id, "PAID"\)/);
   assert.match(source, /disabled=\{rowPending \|\| closed \|\| paid\}/);
   assert.match(source, /disabled=\{rowPending \|\| paid \|\| !hasAmountDue\}/);
   assert.equal(/text-gray-[34]00|text-gray-500|opacity-50|bg-white\/|border-white\//.test(source), false);
@@ -204,10 +197,10 @@ test("cards page sends persisted card and statement ids and replaces successful 
   assert.match(source, /setStatements\(result\.statements\)/);
   assert.match(source, /setStatementsError\(result\.statementsError\)/);
   assert.doesNotMatch(source, /loadedCards\.map/);
-  assert.match(source, /updateStatementPayment\(statement\.userCardId, statement\._id, action, preview\.repaymentAccountId \?\? undefined, commandKey, preview\.version \?\? undefined, preview\)/);
-  assert.match(source, /previewStatementPayment\(statement\.userCardId, statement\._id, action, repaymentAccountId \|\| undefined\)/);
+  assert.match(source, /updateStatementPayment\(statement\.cardId, statement\.id, action, preview\.repaymentAccountId \?\? undefined, commandKey, preview\.version \?\? undefined, preview\)/);
+  assert.match(source, /previewStatementPayment\(statement\.cardId, statement\.id, action, repaymentAccountId \|\| undefined\)/);
   assert.match(source, /paymentCommandKeysRef/);
-  assert.match(source, /item\._id === updated\._id \? updated : item/);
+  assert.match(source, /item\.id === updated\.id \? updated : item/);
   assert.match(source, /pendingPaymentActionsRef\.current\.has\(key\)/);
   assert.match(source, /showToast\(error instanceof Error \? error\.message/);
 });

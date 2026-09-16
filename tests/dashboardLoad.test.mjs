@@ -6,12 +6,12 @@ import { loadDashboardResources } from "../src/lib/cards/dashboardLoadCore.mjs";
 test("dashboard loader returns both successful resources", async () => {
   const result = await loadDashboardResources({
     loadCards: async () => [{ _id: "card-a" }],
-    loadStatements: async () => [{ _id: "statement-a" }],
+    loadStatements: async () => [{ id: "statement-a" }],
   });
 
   assert.deepEqual(result, {
     cards: [{ _id: "card-a" }],
-    statements: [{ _id: "statement-a" }],
+    statements: [{ id: "statement-a" }],
     cardsError: "",
     statementsError: "",
   });
@@ -32,11 +32,11 @@ test("dashboard loader keeps cards when statements fail and clears stale stateme
 test("dashboard loader keeps statements result isolated when cards fail", async () => {
   const result = await loadDashboardResources({
     loadCards: async () => { throw new Error("Card service unavailable"); },
-    loadStatements: async () => [{ _id: "statement-a" }],
+    loadStatements: async () => [{ id: "statement-a" }],
   });
 
   assert.deepEqual(result.cards, []);
-  assert.deepEqual(result.statements, [{ _id: "statement-a" }]);
+  assert.deepEqual(result.statements, [{ id: "statement-a" }]);
   assert.equal(result.cardsError, "Card service unavailable");
   assert.equal(result.statementsError, "");
 });

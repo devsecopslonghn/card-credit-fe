@@ -9,14 +9,6 @@ export const ALLOWED_NETWORKS = new Set([
   "Napas",
 ]);
 
-const LEGACY_FIELD_MAP = {
-  id: "presetId",
-  bank: "providerCode",
-  bankName: "providerName",
-  name: "displayName",
-  type: "network",
-};
-
 const DEFAULT_THEME = {
   background: "#111827",
   accent: "#475569",
@@ -47,7 +39,7 @@ const isValidImageValue = (value) =>
   (isHttpUrl(value) || isLocalImagePath(value) || value.startsWith("data:image/"));
 
 export const getCatalogImageUrl = (product, manifest = {}) => {
-  const manifestEntry = manifest[product.presetId] ?? manifest[product.id];
+  const manifestEntry = manifest[product.presetId];
   if (typeof manifestEntry === "string" && manifestEntry) return manifestEntry;
   if (manifestEntry?.status === "cached" && manifestEntry.localPath) return manifestEntry.localPath;
   if (isValidImageValue(product.imageUrl)) return product.imageUrl;
@@ -118,7 +110,7 @@ export const validateCatalogProducts = (products, options = {}) => {
   const allowRemoteImage = options.allowRemoteImage !== false;
 
   products.forEach((product, index) => {
-    const presetId = product.presetId ?? product.id ?? `index:${index}`;
+    const presetId = product.presetId ?? `index:${index}`;
 
     if (!product.presetId) {
       issues.push(createIssue(presetId, "presetId", "MISSING_PRESET_ID", "presetId is required."));
@@ -138,19 +130,6 @@ export const validateCatalogProducts = (products, options = {}) => {
         );
       } else {
         seenPresetIds.set(product.presetId, index);
-      }
-    }
-
-    for (const [legacyField, canonicalField] of Object.entries(LEGACY_FIELD_MAP)) {
-      if (product[legacyField] !== undefined && product[legacyField] !== product[canonicalField]) {
-        issues.push(
-          createIssue(
-            presetId,
-            legacyField,
-            "LEGACY_ALIAS_MISMATCH",
-            `${legacyField} must match canonical field ${canonicalField}.`,
-          ),
-        );
       }
     }
 

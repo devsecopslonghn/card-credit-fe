@@ -4,7 +4,7 @@ const toMonthKey = (dateOnly) => (typeof dateOnly === "string" && dateOnly.lengt
 
 const formatMonthKey = ({ year, month }) => `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}`;
 
-const getAmountDue = (statement) => Number(statement?.summary?.totalAmountDue ?? 0);
+const getAmountDue = (statement) => Number(statement?.summary?.statementAmount ?? 0);
 
 const isPaidStatement = (statement) =>
   statement?.paymentStatus === "PAID" || statement?.effectivePaymentStatus === "PAID";

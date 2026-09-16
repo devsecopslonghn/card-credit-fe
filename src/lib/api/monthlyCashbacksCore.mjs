@@ -84,19 +84,7 @@ export const fetchMonthlyCashbacksRequest = async (
   return sortMonthlyCashbacks(monthlyCashbackListSchema.parse(body?.data ?? []));
 };
 
-const parseMutationCashback = (value, cardId, period) => {
-  const item = value && typeof value === "object" ? value : {};
-  return monthlyCashbackSchema.parse({
-    id: item.id ?? item._id,
-    cardId: item.cardId ?? item.userCardId ?? cardId,
-    period: item.period ?? period,
-    expectedAmount: item.expectedAmount,
-    actualAmount: item.status === "RECEIVED" ? item.actualAmount ?? null : null,
-    status: item.status,
-    receivedAt: item.receivedAt ?? null,
-    note: item.note ?? "",
-  });
-};
+const parseMutationCashback = (value) => monthlyCashbackSchema.parse(value);
 
 export const upsertMonthlyCashbackRequest = async (
   fetcher,
@@ -117,7 +105,7 @@ export const upsertMonthlyCashbackRequest = async (
       await apiMessage(response, "Không thể lưu cashback ngân hàng."),
     );
   const body = await response.json();
-  return parseMutationCashback(body.data, cardId, period);
+  return parseMutationCashback(body.data);
 };
 
 export const deleteMonthlyCashbackRequest = async (

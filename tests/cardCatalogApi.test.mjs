@@ -28,7 +28,7 @@ test("GET products excludes inactive products", () => {
   assert.equal(presetIds.includes("vpbank-shopee-platinum"), false);
 });
 
-test("GET product detail returns active product without legacy aliases", () => {
+test("GET product detail returns active product without aliases", () => {
   const response = getCatalogProductDetailResponse("sacombank-visa-platinum-cashback");
 
   assert.equal(response.data.presetId, "sacombank-visa-platinum-cashback");

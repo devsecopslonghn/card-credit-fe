@@ -120,8 +120,8 @@ test("client lists, upserts, and deletes encoded card/month resources", async ()
         ok: true,
         json: async () => ({
           data: {
-            _id: "cb-1",
-            userCardId: "card-1",
+            id: "cb-1",
+            cardId: "card-1",
             period: "2026-07",
             expectedAmount: 100,
             actualAmount: null,
