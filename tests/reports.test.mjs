@@ -19,7 +19,7 @@ test("financial reports page renders separated financial KPIs and category break
   const client = readFileSync(new URL("../src/lib/api/financeClient.ts", import.meta.url), "utf8");
   assert.match(page, /Personal spending/);
   assert.match(page, /Debit\/Cash\/E-wallet flow/);
-  assert.match(page, /Credit debt/);
+  assert.match(page, /Nợ phát sinh trong kỳ/);
   assert.match(page, /Khoản phải thu/);
   assert.match(page, /Lợi ích và chi phí/);
   assert.match(page, /actualNetBenefit/);
