@@ -14,7 +14,7 @@ const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
 export const listFinancialTransactions = async (input: FinancialTransactionListQuery = {}) => {
   const query = financialTransactionListQuerySchema.parse(input);
   const params = new URLSearchParams();
-  for (const key of ["from", "to", "accountId", "categoryId", "limit"] as const) {
+  for (const key of ["from", "to", "accountId", "accountType", "transactionType", "ownership", "categoryId", "limit"] as const) {
     const value = query[key] as string | undefined;
     if (value !== undefined) params.set(key, String(value));
   }
