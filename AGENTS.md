@@ -16,7 +16,7 @@ tests and production build. Do not put backend/domain persistence logic here.
 Image publishing and chart tag propagation are performed by `.github/workflows/ci.yml`.
 
 The production image is static-only: Vite emits the SPA into `dist/`, and
-Nginx serves it on port 80. Nginx owns SPA fallback, `/health`, immutable asset
+the unprivileged Nginx runtime serves it on port 8080. Nginx owns SPA fallback, `/health`, immutable asset
 caching and the `/api/` proxy to the backend. Client-side React Router preserves
 dynamic routes such as `/cards/:id`; the client bootstraps auth from
 `/api/auth/me`.
