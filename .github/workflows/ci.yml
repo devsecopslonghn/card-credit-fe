@@ -24,7 +24,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci --include=optional
+        run: npm ci --ignore-scripts --include=optional
 
       - name: Validate frontend
         run: |
@@ -43,7 +43,7 @@ jobs:
     uses: devsecopslonghn/.github/.github/workflows/node-container.yml@9dce2f58f486a6bfb0a0d25c1ad901aaa342d0df
     with:
       node_version: "22"
-      install_command: npm ci --include=optional
+      install_command: npm ci --ignore-scripts --include=optional
       quality_command: npm run validate-contracts && npm run typecheck && npm run lint && npm test
       build_command: npm run build
       image_name: ghcr.io/devsecopslonghn/card-credit-fe

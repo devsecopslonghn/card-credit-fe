@@ -6,7 +6,7 @@ WORKDIR /workspace
 COPY package.json package-lock.json ./
 # Tailwind/PostCSS uses lightningcss; Alpine requires its musl native optional
 # package to be installed explicitly in the dependency layer.
-RUN --mount=type=cache,id=card-credit-frontend-npm,target=/root/.npm npm ci --include=optional
+RUN --mount=type=cache,id=card-credit-frontend-npm,target=/root/.npm npm ci --ignore-scripts --include=optional
 
 FROM node:22-alpine@sha256:b6f26b36c8ff49624cfdac716b8ea1138d606df02586a77d364bb5536a634f85 AS builder
 WORKDIR /workspace

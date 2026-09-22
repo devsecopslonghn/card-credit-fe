@@ -7,6 +7,7 @@ const nginx = await readFile(new URL("../nginx.conf", import.meta.url), "utf8");
 
 test("frontend image uses a pinned unprivileged Nginx runtime", () => {
   assert.equal((dockerfile.match(/FROM node:22-alpine@sha256:[a-f0-9]{64}/g) ?? []).length, 2);
+  assert.match(dockerfile, /npm ci --ignore-scripts --include=optional/);
   assert.match(dockerfile, /FROM nginxinc\/nginx-unprivileged:1\.29-alpine@sha256:[a-f0-9]{64} AS runner/);
   assert.match(dockerfile, /USER 101:101/);
   assert.match(dockerfile, /COPY --from=builder \/workspace\/dist \/usr\/share\/nginx\/html/);
