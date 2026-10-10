@@ -4,7 +4,7 @@ import { createFinancialTransaction, deleteFinancialTransaction, listFinanceAcco
 import { FinanceShell, vnd, typeClass, typeLabel } from "@/components/finance/FinanceShell";
 import type { FinanceCategoryDto, UpdateFinancialTransactionInput } from "@card-credit/contracts";
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 const editableTypes = ["EXPENSE", "INCOME", "REIMBURSEMENT", "REFUND", "CASHBACK"] as const;
 const accountTypes = ["DEBIT", "CASH", "E_WALLET", "CREDIT"] as const;
 type AccountTypeFilter = typeof accountTypes[number];
