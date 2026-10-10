@@ -201,6 +201,9 @@ export default function CardsPage() {
       paymentCommandKeysRef.current.set(key, commandKey);
       const updated = await updateStatementPayment(statement.cardId, statement.id, action, preview.repaymentAccountId ?? undefined, commandKey, preview.version ?? undefined, preview);
       setStatements((current) => current.map((item) => (item.id === updated.id ? updated : item)));
+      // The cached account balance predates the payment. Refresh from the
+      // ledger rather than showing an outdated creditDebtByCardId snapshot.
+      void listFinanceAccounts().then((items) => setCreditDebtByCardId(new Map(items.filter((item) => item.active && item.type === "CREDIT" && item.creditCardId).map((item) => [item.creditCardId!, item.currentDebt])))).catch(() => setCreditDebtByCardId(new Map()));
       paymentCommandKeysRef.current.delete(key);
       showToast(action === "CLOSED" ? "Đã chốt kỳ sao kê." : "Đã đánh dấu thanh toán.");
     } catch (error) {
